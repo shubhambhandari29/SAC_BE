@@ -1,0 +1,48 @@
+# services/sac/loss_run_distribution_service.py
+
+import logging
+from typing import Any
+
+from fastapi import HTTPException
+
+from core.db_helpers import delete_records, fetch_records, merge_upsert_records, sanitize_filters
+
+logger = logging.getLogger(__name__)
+
+TABLE_NAME = "tblDistribute_LossRun"
+ALLOWED_FILTERS = {"CustomerNum", "EMailAddress"}
+
+
+async def get_distribution(query_params: dict[str, Any]):
+    try:
+        filters = sanitize_filters(query_params, ALLOWED_FILTERS)
+        return fetch_records(table=TABLE_NAME, filters=filters)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except Exception as e:
+        logger.warning(f"Error fetching Loss Run Distribution List - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+
+
+async def upsert_distribution(data_list: list[dict[str, Any]]):
+    try:
+        return merge_upsert_records(
+            table=TABLE_NAME,
+            data_list=data_list,
+            key_columns=["CustomerNum", "EMailAddress"],
+        )
+    except Exception as e:
+        logger.warning(f"Insert/Update failed - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+
+
+async def delete_distribution(data_list: list[dict[str, Any]]):
+    try:
+        return delete_records(
+            table=TABLE_NAME,
+            data_list=data_list,
+            key_columns=["CustomerNum", "EMailAddress"],
+        )
+    except Exception as e:
+        logger.warning(f"Deletion failed - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
