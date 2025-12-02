@@ -10,8 +10,7 @@ from services.auth_service import (
 )
 
 router = APIRouter()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
 @router.post("/login")
@@ -30,5 +29,9 @@ async def logout(response: Response):
 
 
 @router.post("/refresh_token")
-async def refresh_token(request: Request, response: Response, token: str = Depends(oauth2_scheme)):
+async def refresh_token(
+    request: Request,
+    response: Response,
+    token: str | None = Depends(oauth2_scheme),
+):
     return await refresh_user_token(request, response, token)

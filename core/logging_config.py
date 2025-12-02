@@ -26,7 +26,13 @@ def configure_logging():
     )
     file_handler.setFormatter(formatter)
 
-    # Add handlers
-    if not root.handlers:
-        root.addHandler(console_handler)
-        root.addHandler(file_handler)
+    # Reset any handlers configured by the ASGI server so we can ensure ours always run
+    for handler in root.handlers[:]:
+        root.removeHandler(handler)
+        try:
+            handler.close()
+        except Exception:
+            pass
+
+    root.addHandler(console_handler)
+    root.addHandler(file_handler)

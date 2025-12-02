@@ -177,7 +177,7 @@ async def logout_user(response: Response):
     return {"message": "Logged out successfully"}
 
 
-async def refresh_user_token(request: Request, response: Response, token: str):
+async def refresh_user_token(request: Request, response: Response, token: str | None):
     """
     Creates a new token using an existing valid token.
     """

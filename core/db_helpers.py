@@ -3,9 +3,11 @@
 import logging
 import re
 from collections.abc import Iterable
+from functools import partial
 from typing import Any
 
 import pandas as pd
+from fastapi.concurrency import run_in_threadpool
 
 from db import db_connection
 
@@ -236,3 +238,40 @@ def delete_records(
         raise
 
     return {"message": "Deletion successful", "count": len(data_list)}
+
+
+async def fetch_records_async(
+    table: str,
+    filters: dict[str, Any] | None = None,
+    order_by: str | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Threadpool wrapper around fetch_records to keep blocking DB calls off the event loop.
+    """
+    return await run_in_threadpool(
+        partial(fetch_records, table=table, filters=filters, order_by=order_by)
+    )
+
+
+async def run_raw_query_async(query: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+    return await run_in_threadpool(partial(run_raw_query, query=query, params=params or []))
+
+
+async def merge_upsert_records_async(
+    table: str,
+    data_list: list[dict[str, Any]],
+    key_columns: list[str],
+) -> dict[str, Any]:
+    return await run_in_threadpool(
+        partial(merge_upsert_records, table=table, data_list=data_list, key_columns=key_columns)
+    )
+
+
+async def delete_records_async(
+    table: str,
+    data_list: list[dict[str, Any]],
+    key_columns: list[str],
+) -> dict[str, Any]:
+    return await run_in_threadpool(
+        partial(delete_records, table=table, data_list=data_list, key_columns=key_columns)
+    )

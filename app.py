@@ -6,9 +6,11 @@ from api.sac.claim_review_distribution import router as claim_review_distributio
 from api.sac.claim_review_frequency import router as claim_review_frequency_router
 from api.sac.deduct_bill_distribution import router as deduct_bill_distribution_router
 from api.sac.deduct_bill_frequency import router as deduct_bill_frequency_router
+from api.sac.hcm_users import router as hcm_users_router
 from api.sac.loss_run_distribution import router as loss_run_distribution_router
 from api.sac.loss_run_frequency import router as loss_run_frequency_router
 from api.sac.sac_account import router as sac_account_router
+from api.sac.sac_affiliates import router as sac_affiliates_router
 from api.sac.sac_policies import router as sac_policies_router
 from api.sac.search_sac_account import router as search_sac_account_router
 from core.config import settings
@@ -37,11 +39,19 @@ app.add_middleware(
 )
 
 
+@app.get("/health", tags=["health"])
+async def health_check():
+    return {"status": "ok"}
+
+
+
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # sac
 app.include_router(sac_account_router, prefix="/sac_account", tags=["sac_account"])
 app.include_router(sac_policies_router, prefix="/sac_policies", tags=["sac_policies"])
+app.include_router(hcm_users_router, prefix="/hcm_users", tags=["hcm_users"])
+app.include_router(sac_affiliates_router, prefix="/sac_affiliates", tags=["sac_affiliates"])
 app.include_router(
     search_sac_account_router, prefix="/search_sac_account", tags=["search_sac_account"]
 )

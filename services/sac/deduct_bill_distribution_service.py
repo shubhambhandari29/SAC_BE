@@ -5,7 +5,12 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from core.db_helpers import delete_records, fetch_records, merge_upsert_records, sanitize_filters
+from core.db_helpers import (
+    delete_records_async,
+    fetch_records_async,
+    merge_upsert_records_async,
+    sanitize_filters,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +21,7 @@ ALLOWED_FILTERS = {"CustomerNum", "EMailAddress"}
 async def get_distribution(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params, ALLOWED_FILTERS)
-        return fetch_records(table=TABLE_NAME, filters=filters)
+        return await fetch_records_async(table=TABLE_NAME, filters=filters)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -26,7 +31,7 @@ async def get_distribution(query_params: dict[str, Any]):
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
     try:
-        return merge_upsert_records(
+        return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=data_list,
             key_columns=["CustomerNum", "EMailAddress"],
@@ -38,7 +43,7 @@ async def upsert_distribution(data_list: list[dict[str, Any]]):
 
 async def delete_distribution(data_list: list[dict[str, Any]]):
     try:
-        return delete_records(
+        return await delete_records_async(
             table=TABLE_NAME,
             data_list=data_list,
             key_columns=["CustomerNum", "EMailAddress"],

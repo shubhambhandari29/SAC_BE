@@ -29,7 +29,6 @@ def get_raw_connection() -> pyodbc.Connection:
     Services or context managers will use this.
     """
     conn_str = _build_connection_string()
-    print("CONN STR", conn_str)
     return pyodbc.connect(conn_str)
 
 

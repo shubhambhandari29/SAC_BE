@@ -441,3 +441,87 @@ response :
   "message": "Transaction successful",
   "count": 2
 }
+
+
+
+/HCM USERS GET
+
+response :
+
+[
+  {
+    "UserID": "user-1",
+    "FirstName": "Jane",
+    "LastName": "Doe",
+    "Email": "jane@example.com",
+    "Role": "Manager",
+    "CustomerNum": "CUST001"
+  },
+  {
+    "UserID": "user-2",
+    "FirstName": "John",
+    "LastName": "Smith",
+    "Email": "john@example.com",
+    "Role": "Analyst",
+    "CustomerNum": "CUST001"
+  }
+]
+
+
+
+POST /hcm_users/upsert 
+request :
+
+[
+  {
+    "CustomerNum": "CUST003",
+    "UserID": "user-3",
+    "FirstName": "Alice",
+    "Email": "alice@example.com",
+    "Role": "Coordinator"
+  }
+]
+
+response :
+
+{
+  "message": "Transaction successful",
+  "count": 1
+}
+
+
+
+GET /sac_affiliates/
+response :
+
+[
+  {
+    "CustomerNum": "CUST001",
+    "AffiliateName": "Acme Health",
+    "Email": "contact@acmehealth.com",
+    "Phone": "555-0101"
+  },
+  {
+    "CustomerNum": "CUST002",
+    "AffiliateName": "Wellness Partners",
+    "Email": "info@wellness.com",
+    "Phone": "555-0202"
+  }
+]
+
+
+/sac_affiliates/upsert
+request:
+
+[
+  {
+    "CustomerNum": "CUST003",
+    "AffiliateName": "New Partner",
+    "Email": "partner@example.com",
+    "Phone": "555-0303"
+  }
+]
+
+ /sac_policies/get_premium
+
+ 20000
