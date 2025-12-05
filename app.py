@@ -38,11 +38,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/", tags=["home page"])
+async def home():
+    return "Welcome to SAC"
+
 
 @app.get("/health", tags=["health"])
 async def health_check():
     return {"status": "ok"}
-
 
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])

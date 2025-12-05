@@ -4,25 +4,22 @@ from contextlib import contextmanager
 
 import pyodbc
 
+from core.config import settings
 
-# -----------------------------
+
 # Build SQL connection string
-# -----------------------------
 def _build_connection_string() -> str:
     return (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        "SERVER=localhost,1433;"
-        "DATABASE=sac_db;"  # or your DB name
-        "UID=sa;"
-        "PWD=Shubh&0209;"
+        f"Driver={settings.DB_DRIVER};"
+        f"Server={settings.DB_SERVER};"
+        f"Database={settings.DB_NAME};"
+        f"Authentication={settings.DB_AUTH};"
         "Encrypt=yes;"
-        "TrustServerCertificate=yes;"
+        "TrustServerCertificate=no;"
     )
 
 
-# -----------------------------
 # New Connection Getter
-# -----------------------------
 def get_raw_connection() -> pyodbc.Connection:
     """
     Returns a NEW pyodbc connection.
@@ -32,9 +29,7 @@ def get_raw_connection() -> pyodbc.Connection:
     return pyodbc.connect(conn_str)
 
 
-# -----------------------------
-# Context Manager (preferred)
-# -----------------------------
+# Context Manager
 @contextmanager
 def db_connection():
     """
@@ -53,7 +48,8 @@ def db_connection():
 def get_db():
     """
     FastAPI dependency for routes or services.
-    Each request gets a fresh connection.
+    Each request gets a fresh connection. We are not using this right now
+    we will use this if we use dependency injection
     """
     conn = get_raw_connection()
     try:
