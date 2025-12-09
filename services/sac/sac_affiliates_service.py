@@ -1,6 +1,5 @@
-import logging
-from typing import Any, Dict, List
-
+from db import conn
+import pandas as pd
 from fastapi import HTTPException
 
 from core.db_helpers import (
@@ -53,5 +52,6 @@ async def upsert_affiliates(data_list: List[Dict[str, Any]]):
 
         return {"message": "Transaction successful", "count": len(data_list)}
     except Exception as e:
-        logger.warning(f"SAC affiliates upsert failed - {str(e)}")
-        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+        conn.rollback()
+        logger.warning(f"Insert/Update failed - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)})

@@ -62,17 +62,37 @@ async def get_sac_account(query_params: dict[str, Any]):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
-        logger.warning(f"Error fetching SAC account List - {str(e)}")
-        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
-
-
-async def upsert_sac_account(data: dict[str, Any]):
+        logger.warning(f"EError fetching SAC account List - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)})
+   
+   
+ 
+async def upsert_sac_account(data):
+    """
+    Update row if already exists, else insert row into tblAcctSpecial
+    """
+ 
     try:
-        return await merge_upsert_records_async(
-            table=TABLE_NAME,
-            data_list=[data],
-            key_columns=["CustomerNum"],
-        )
+        cursor = conn.cursor()
+ 
+        # Assuming `CustomerNum` is the primary key / unique identifier
+        merge_query = f"""
+        MERGE INTO tblAcctSpecial AS target
+        USING (SELECT {", ".join(['? AS ' + col for col in data.keys()])}) AS source
+        ON target.CustomerNum = source.CustomerNum
+        WHEN MATCHED THEN
+            UPDATE SET {", ".join([f"{col} = source.{col}" for col in data.keys() if col != 'CustomerNum'])}
+        WHEN NOT MATCHED THEN
+            INSERT ({", ".join(data.keys())})
+            VALUES ({", ".join(['source.' + col for col in data.keys()])});
+        """
+ 
+        values = list(data.values())
+        cursor.execute(merge_query, values)
+        conn.commit()
+ 
+        return {"message": "Transaction successful"}
     except Exception as e:
-        logger.warning(f"Upsert failed - {str(e)}")
-        raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+        conn.rollback()
+        logger.warning(f"Insert/Update failed - {str(e)}")
+        raise HTTPException(status_code=500, detail={"error": str(e)})
