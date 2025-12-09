@@ -113,6 +113,8 @@ def merge_upsert_records(
     table: str,
     data_list: list[dict[str, Any]],
     key_columns: list[str],
+    *,
+    exclude_key_columns_from_insert: bool = False,
 ) -> dict[str, Any]:
     """
     Generic MERGE-based upsert helper.
@@ -157,13 +159,21 @@ WHEN MATCHED THEN
     UPDATE SET {update_set}
 """
 
+                insert_columns = (
+                    [col for col in columns if col not in key_columns]
+                    if exclude_key_columns_from_insert
+                    else columns
+                )
+                if not insert_columns:
+                    raise ValueError("No columns available for insert operation")
+
                 merge_query = f"""
 MERGE INTO {table} AS target
 USING (SELECT {using_cols}) AS source
 ON {on_clause}
 {update_section}WHEN NOT MATCHED THEN
-    INSERT ({", ".join(columns)})
-    VALUES ({", ".join(["source." + col for col in columns])});
+    INSERT ({", ".join(insert_columns)})
+    VALUES ({", ".join(["source." + col for col in insert_columns])});
 """
                 values = list(data.values())
                 cursor.execute(merge_query, values)
@@ -301,9 +311,17 @@ async def merge_upsert_records_async(
     table: str,
     data_list: list[dict[str, Any]],
     key_columns: list[str],
+    *,
+    exclude_key_columns_from_insert: bool = False,
 ) -> dict[str, Any]:
     return await run_in_threadpool(
-        partial(merge_upsert_records, table=table, data_list=data_list, key_columns=key_columns)
+        partial(
+            merge_upsert_records,
+            table=table,
+            data_list=data_list,
+            key_columns=key_columns,
+            exclude_key_columns_from_insert=exclude_key_columns_from_insert,
+        )
     )
 
 

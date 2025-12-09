@@ -64,6 +64,7 @@ async def upsert_hcm_users(data_list: List[Dict[str, Any]]):
                 table=TABLE_NAME,
                 data_list=to_update,
                 key_columns=[PRIMARY_KEY],
+                exclude_key_columns_from_insert=True,
             )
 
         if to_insert:
