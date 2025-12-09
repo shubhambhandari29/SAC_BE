@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from core.db_helpers import (
     fetch_records_async,
+    insert_records_async,
     merge_upsert_records_async,
     sanitize_filters,
 )
@@ -12,7 +13,7 @@ from core.db_helpers import (
 logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblAffiliates"
-KEY_COLUMNS = ["CustomerNum", "AffiliateName"]
+PRIMARY_KEY = "PK_Number"
 
 
 async def get_affiliates(query_params: Dict[str, Any]):
@@ -28,11 +29,29 @@ async def get_affiliates(query_params: Dict[str, Any]):
 
 async def upsert_affiliates(data_list: List[Dict[str, Any]]):
     try:
-        return await merge_upsert_records_async(
-            table=TABLE_NAME,
-            data_list=data_list,
-            key_columns=KEY_COLUMNS,
-        )
+        to_update: List[Dict[str, Any]] = []
+        to_insert: List[Dict[str, Any]] = []
+
+        for record in data_list:
+            pk_value = record.get(PRIMARY_KEY)
+            if pk_value in (None, ""):
+                sanitized_record = {k: v for k, v in record.items() if k != PRIMARY_KEY}
+                if sanitized_record:
+                    to_insert.append(sanitized_record)
+            else:
+                to_update.append(record)
+
+        if to_update:
+            await merge_upsert_records_async(
+                table=TABLE_NAME,
+                data_list=to_update,
+                key_columns=[PRIMARY_KEY],
+            )
+
+        if to_insert:
+            await insert_records_async(table=TABLE_NAME, records=to_insert)
+
+        return {"message": "Transaction successful", "count": len(data_list)}
     except Exception as e:
         logger.warning(f"SAC affiliates upsert failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
