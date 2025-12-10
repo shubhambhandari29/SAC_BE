@@ -1,5 +1,3 @@
-# core/config.py
-
 import os
 
 from dotenv import load_dotenv
@@ -16,23 +14,18 @@ def _require_env(var_name: str) -> str:
 
 
 class Settings:
-    # ---------------------
+
     # Database configuration
-    # ---------------------
     DB_SERVER: str = _require_env("DB_SERVER")
     DB_NAME: str = _require_env("DB_NAME")
-    DB_USER: str = _require_env("DB_USER")
-    DB_PASSWORD: str = _require_env("DB_PASSWORD")
+    DB_DRIVER: str = _require_env("DB_DRIVER")
+    DB_AUTH: str = _require_env("DB_AUTH")
 
-    # ---------------------
     # JWT / Auth config
-    # ---------------------
     SECRET_KEY: str = _require_env("SECRET_KEY")
     ACCESS_TOKEN_VALIDITY: int = int(os.getenv("ACCESS_TOKEN_VALIDITY", 480))  # minutes
 
-    # ---------------------
     # CORS settings
-    # ---------------------
     ALLOWED_ORIGINS = [os.getenv("FRONTEND_URL", "http://localhost:3000")]
 
 
