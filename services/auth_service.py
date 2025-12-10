@@ -1,5 +1,3 @@
-# services/auth_service.py
-
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -8,7 +6,11 @@ from fastapi import HTTPException, Request, Response
 
 from core.db_helpers import run_raw_query
 from core.encrypt import hash_password, verify_password
-from core.jwt_handler import ACCESS_TOKEN_VALIDITY, create_access_token, decode_access_token
+from core.jwt_handler import (
+    ACCESS_TOKEN_VALIDITY,
+    create_access_token,
+    decode_access_token,
+)
 from db import db_connection
 
 logger = logging.getLogger(__name__)
@@ -89,7 +91,6 @@ async def login_user(login_data: dict[str, Any], response: Response):
 
     email = login_data.get("email")
     password = login_data.get("password")
-
     if not email or not password:
         logger.warning("Login attempt with missing data")
         raise HTTPException(status_code=400, detail={"error": "Missing email or password"})
@@ -100,8 +101,7 @@ async def login_user(login_data: dict[str, Any], response: Response):
     if not user_record:
         logger.warning(f"Login failed: user not found ({email})")
         raise HTTPException(status_code=404, detail={"error": "User not found"})
-
-    stored_password = str(user_record.get("password", ""))
+    stored_password = str(user_record.get("Password", ""))
     password_valid = False
     needs_rehash = False
 
@@ -121,18 +121,19 @@ async def login_user(login_data: dict[str, Any], response: Response):
     if needs_rehash:
         try:
             new_hash = hash_password(password)
-            _persist_hashed_password(user_record["id"], new_hash)
+            _persist_hashed_password(user_record["ID"], new_hash)
             logger.info(f"Rehashed legacy password for user {email}")
         except Exception as exc:
             logger.error(f"Failed to rehash password for user {email}: {exc}", exc_info=True)
 
     # Prepare user payload (only safe fields)
     user = {
-        "id": user_record["id"],
-        "first_name": user_record["first_name"],
-        "last_name": user_record["last_name"],
-        "email": user_record["email"],
-        "role": user_record["role"],
+        "id": user_record["ID"],
+        "first_name": user_record["FirstName"],
+        "last_name": user_record["LastName"],
+        "email": user_record["Email"],
+        "role": user_record["Role"],
+        "branch": user_record["BranchName"],
     }
 
     # Create JWT
