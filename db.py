@@ -1,40 +1,58 @@
+# db.py
+
+from contextlib import contextmanager
+
 import pyodbc
-# import pandas as pd
 
-# Parameters
-# server = "devucepipclaimsanalytics.database.windows.net"
-# database = "dev_ucep_ip_claims_analytics"
-# username = "SqlAdminUser"
-# password = "Admin@2025"
+from core.config import settings
 
-# Connection string for EXL sandbox
-# conn_str = (
-#     "DRIVER={SQL Server};"
-#     f"SERVER={server};"
-#     f"DATABASE={database};"
-#     f"UID={username};"
-#     f"PWD={password}"
-# )
 
-# Connection string for Hanover Preprod
-conn_str = (
-    "Driver={ODBC Driver 17 for SQL Server};"
-    "Server=clms-preprd-sqlmanagedinstance.3b98dc354c37.database.windows.net;"
-    "Database=CLMAA_SpecialAccounts;"
-    "Authentication=ActiveDirectoryIntegrated;"
-    "Encrypt=yes;"
-    "TrustServerCertificate=no;"
-)
+# Build SQL connection string
+def _build_connection_string() -> str:
+    return (
+        f"Driver={settings.DB_DRIVER};"
+        f"Server={settings.DB_SERVER};"
+        f"Database={settings.DB_NAME};"
+        f"Authentication={settings.DB_AUTH};"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
+    )
 
-# Connect to SQL Server
-conn = pyodbc.connect(conn_str)
 
-# Read only the specific table
-# query = "SELECT * FROM dbo.tblUsers"
-# df_tblAcctSpecial = pd.read_sql(query, conn)
+# New Connection Getter
+def get_raw_connection() -> pyodbc.Connection:
+    """
+    Returns a NEW pyodbc connection.
+    Services or context managers will use this.
+    """
+    conn_str = _build_connection_string()
+    return pyodbc.connect(conn_str)
 
-# # Close connection
-# conn.close()
 
-# # Show first few rows
-# print(df_tblAcctSpecial.head())
+# Context Manager
+@contextmanager
+def db_connection():
+    """
+    Usage:
+        with db_connection() as conn:
+            cursor = conn.cursor()
+            ...
+    """
+    conn = get_raw_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def get_db():
+    """
+    FastAPI dependency for routes or services.
+    Each request gets a fresh connection. We are not using this right now
+    we will use this if we use dependency injection
+    """
+    conn = get_raw_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()

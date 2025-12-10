@@ -4,7 +4,6 @@ target-version = ["py310", "py311", "py312"]
 skip-string-normalization = false
 
 [tool.ruff]
-line-length = 100
 target-version = "py312"
 respect-gitignore = true
 
@@ -17,7 +16,7 @@ select = [
     "I",  # isort
     "UP"  # pyupgrade
 ]
-ignore = [
+extend-ignore = [
     "E501"  # rely on Black for long lines
 ]
 

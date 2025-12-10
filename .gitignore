@@ -1,5 +1,46 @@
-# Ignore Python cache
+# Python artifacts
 __pycache__/
 *.py[cod]
-venv
-app.log*
+*.pyo
+*.pyd
+*.pyc
+.Python
+env/
+venv/
+.venv/
+.env*
+
+# Dependency / build
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Logs and local data
+logs/
+*.log
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Database / secrets
+*.db
+db.sqlite3
+
+# Coverage / pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ruff / Black caches
+.ruff_cache/
+.mypy_cache/
+
+.API_CHECKS.txt
+API_CHECKS.txt
+api/affinity/
+services/affinity/
+
