@@ -1,12 +1,15 @@
-from typing import Optional
-
 from pydantic import BaseModel, EmailStr, Field
 
 
 class HCMUserUpsert(BaseModel):
-    CustomerNum: str = Field(..., min_length=1)
+    UserTitle: str | None = None
     UserID: str = Field(..., min_length=1)
-    Email: Optional[EmailStr] = None
-
-    class Config:
-        extra = "allow"
+    UserName: str | None = None
+    UserEmail: EmailStr | None = None
+    TelNum: int | None = None
+    TelExt: int | None = None
+    UserAction: str | None = None
+    CustomerNum: str = Field(..., min_length=1)
+    LanID: str | None = None
+    PROD_Password: str | None = None
+    UAT_Password: str | None = None

@@ -14,5 +14,6 @@ class SacAccountUpsert(BaseModel):
     OnBoardDate: date | None = None
     ServLevel: str | None = None
     Stage: str | None = None
-    isSubmitted: bool | None = None
+    isSubmitted: str | None = None
     AcctOwner: str | None = None
+    BusinessType: str | None = None
