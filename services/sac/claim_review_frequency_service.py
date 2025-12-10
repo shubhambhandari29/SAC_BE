@@ -1,7 +1,7 @@
 # services/sac/claim_review_frequency_service.py
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import HTTPException
 
@@ -19,14 +19,14 @@ ALLOWED_FILTERS_DB = {"CustNum", "MthNum"}
 FILTER_MAP = {"CustomerNum": "CustNum"}
 
 
-def _remap_keys(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _remap_keys(payload: dict[str, Any]) -> dict[str, Any]:
     remapped = payload.copy()
     if "CustomerNum" in remapped:
         remapped["CustNum"] = remapped.pop("CustomerNum")
     return remapped
 
 
-def _restore_customer_num(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _restore_customer_num(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for record in records:
         if "CustNum" in record:
             record["CustomerNum"] = record.pop("CustNum")

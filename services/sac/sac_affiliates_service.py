@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import HTTPException
 
@@ -16,7 +16,7 @@ TABLE_NAME = "tblAffiliates"
 PRIMARY_KEY = "PK_Number"
 
 
-async def get_affiliates(query_params: Dict[str, Any]):
+async def get_affiliates(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params)
         return await fetch_records_async(table=TABLE_NAME, filters=filters)
@@ -27,10 +27,10 @@ async def get_affiliates(query_params: Dict[str, Any]):
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
 
-async def upsert_affiliates(data_list: List[Dict[str, Any]]):
+async def upsert_affiliates(data_list: list[dict[str, Any]]):
     try:
-        to_update: List[Dict[str, Any]] = []
-        to_insert: List[Dict[str, Any]] = []
+        to_update: list[dict[str, Any]] = []
+        to_insert: list[dict[str, Any]] = []
 
         for record in data_list:
             pk_value = record.get(PRIMARY_KEY)

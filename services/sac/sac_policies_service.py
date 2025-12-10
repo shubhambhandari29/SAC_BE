@@ -1,5 +1,3 @@
-# services/sac/sac_policies_service.py
-
 import logging
 from typing import Any
 
@@ -18,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblPolicies"
 ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod"}
-ALLOWED_UPDATE_FIELDS = {"ServLevel", "Stage", "AcctOwner", "isSubmitted"}
-ALLOWED_UPDATE_FILTERS = {"CustomerNum", "PolicyNum", "PolMod"}
 PREMIUM_ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod", "PolicyStatus"}
 
 
@@ -50,12 +46,6 @@ async def update_field_for_all_policies(data: dict[str, Any]):
     field_name = data.get("fieldName")
     update_via = data.get("updateVia")
 
-    if field_name not in ALLOWED_UPDATE_FIELDS:
-        raise HTTPException(status_code=400, detail={"error": "Invalid fieldName"})
-
-    if update_via not in ALLOWED_UPDATE_FILTERS:
-        raise HTTPException(status_code=400, detail={"error": "Invalid updateVia"})
-
     if "fieldValue" not in data or "updateViaValue" not in data:
         raise HTTPException(status_code=400, detail={"error": "Missing required values"})
 
@@ -77,7 +67,6 @@ async def update_field_for_all_policies(data: dict[str, Any]):
     except Exception as e:
         logger.error(f"Error updating policies field: {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
-
 
 
 async def get_premium(query_params: dict[str, Any]):

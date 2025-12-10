@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import HTTPException
 
@@ -17,21 +17,21 @@ PRIMARY_KEY = "PK_Number"
 FILTER_MAP = {"CustomerNum": "CustNum"}
 
 
-def _remap_keys(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _remap_keys(payload: dict[str, Any]) -> dict[str, Any]:
     remapped = payload.copy()
     if "CustomerNum" in remapped:
         remapped["CustNum"] = remapped.pop("CustomerNum")
     return remapped
 
 
-def _restore_customer_num(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _restore_customer_num(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for record in records:
         if "CustNum" in record:
             record["CustomerNum"] = record.pop("CustNum")
     return records
 
 
-async def get_hcm_users(query_params: Dict[str, Any]):
+async def get_hcm_users(query_params: dict[str, Any]):
     try:
         normalized = {FILTER_MAP.get(key, key): value for key, value in query_params.items()}
         filters = sanitize_filters(normalized)
@@ -44,11 +44,11 @@ async def get_hcm_users(query_params: Dict[str, Any]):
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
 
-async def upsert_hcm_users(data_list: List[Dict[str, Any]]):
+async def upsert_hcm_users(data_list: list[dict[str, Any]]):
     try:
         payload = [_remap_keys(item) for item in data_list]
-        to_update: List[Dict[str, Any]] = []
-        to_insert: List[Dict[str, Any]] = []
+        to_update: list[dict[str, Any]] = []
+        to_insert: list[dict[str, Any]] = []
 
         for record in payload:
             pk_value = record.get(PRIMARY_KEY)

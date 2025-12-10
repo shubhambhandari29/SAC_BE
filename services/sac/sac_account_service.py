@@ -35,9 +35,7 @@ async def get_sac_account(query_params: dict[str, Any]):
         if not branch_filter:
             return await fetch_records_async(table=TABLE_NAME, filters=filters)
 
-        branch_terms = [
-            term for term in re.split(r"[ ,&]+", str(branch_filter)) if term.strip()
-        ]
+        branch_terms = [term for term in re.split(r"[ ,&]+", str(branch_filter)) if term.strip()]
 
         # Fall back to simple filtering if nothing usable came from the branch filter.
         if not branch_terms:

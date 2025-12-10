@@ -1,5 +1,3 @@
-# services/sac/claim_review_distribution_service.py
-
 import logging
 from typing import Any
 

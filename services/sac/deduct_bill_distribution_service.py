@@ -1,5 +1,3 @@
-# services/sac/deduct_bill_distribution_service.py
-
 import logging
 from typing import Any
 
