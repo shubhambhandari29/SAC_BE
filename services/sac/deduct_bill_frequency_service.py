@@ -1,7 +1,7 @@
 # services/sac/deduct_bill_frequency_service.py
 
 import logging
-from typing import Any
+from typing import Any, Dict, List
 
 from fastapi import HTTPException
 
@@ -15,13 +15,34 @@ logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblDeductBillFrequency"
 ORDER_BY_COLUMN = "MthNum"
-ALLOWED_FILTERS = {"CustomerNum", "MthNum"}
+ALLOWED_FILTERS_DB = {"CustNum", "MthNum"}
+FILTER_MAP = {"CustomerNum": "CustNum"}
+
+
+def _remap_keys(payload: Dict[str, Any]) -> Dict[str, Any]:
+    remapped = payload.copy()
+    if "CustomerNum" in remapped:
+        remapped["CustNum"] = remapped.pop("CustomerNum")
+    return remapped
+
+
+def _restore_customer_num(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    for record in records:
+        if "CustNum" in record:
+            record["CustomerNum"] = record.pop("CustNum")
+    return records
 
 
 async def get_frequency(query_params: dict[str, Any]) -> list[dict[str, Any]]:
     try:
-        filters = sanitize_filters(query_params, ALLOWED_FILTERS)
-        return await fetch_records_async(table=TABLE_NAME, filters=filters, order_by=ORDER_BY_COLUMN)
+        normalized = {FILTER_MAP.get(key, key): value for key, value in query_params.items()}
+        filters = sanitize_filters(normalized, ALLOWED_FILTERS_DB)
+        records = await fetch_records_async(
+            table=TABLE_NAME,
+            filters=filters,
+            order_by=ORDER_BY_COLUMN,
+        )
+        return _restore_customer_num(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -31,10 +52,11 @@ async def get_frequency(query_params: dict[str, Any]) -> list[dict[str, Any]]:
 
 async def upsert_frequency(data_list: list[dict[str, Any]]) -> dict[str, Any]:
     try:
+        payload = [_remap_keys(item) for item in data_list]
         return await merge_upsert_records_async(
             table=TABLE_NAME,
-            data_list=data_list,
-            key_columns=["CustomerNum", "MthNum"],
+            data_list=payload,
+            key_columns=["CustNum", "MthNum"],
         )
     except Exception as e:
         logger.warning(f"Insert/Update failed - {str(e)}")
