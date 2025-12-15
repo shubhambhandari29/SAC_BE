@@ -2,6 +2,7 @@
 
 import logging
 import re
+from datetime import date, datetime
 from typing import Any
 
 from fastapi import HTTPException
@@ -20,11 +21,13 @@ ALLOWED_FILTERS = {
     "CustomerNum",
     "CustomerName",
     "Stage",
-    "isSubmitted",
+    "IsSubmitted",
     "ServLevel",
     "AcctOwner",
     "BranchName",
 }
+_ONBOARD_DATE_FIELD = "OnBoardDate"
+_DATE_OUTPUT_FORMAT = "%d-%m-%Y"
 
 
 async def get_sac_account(query_params: dict[str, Any]):
@@ -33,13 +36,15 @@ async def get_sac_account(query_params: dict[str, Any]):
         branch_filter = filters.pop("BranchName", None)
 
         if not branch_filter:
-            return await fetch_records_async(table=TABLE_NAME, filters=filters)
+            records = await fetch_records_async(table=TABLE_NAME, filters=filters)
+            return _format_onboard_dates(records)
 
         branch_terms = [term for term in re.split(r"[ ,&]+", str(branch_filter)) if term.strip()]
 
         # Fall back to simple filtering if nothing usable came from the branch filter.
         if not branch_terms:
-            return await fetch_records_async(table=TABLE_NAME, filters=filters)
+            records = await fetch_records_async(table=TABLE_NAME, filters=filters)
+            return _format_onboard_dates(records)
 
         clauses: list[str] = []
         params: list[Any] = []
@@ -56,7 +61,8 @@ async def get_sac_account(query_params: dict[str, Any]):
         if clauses:
             query += " WHERE " + " AND ".join(clauses)
 
-        return await run_raw_query_async(query, list(params))
+        records = await run_raw_query_async(query, list(params))
+        return _format_onboard_dates(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -74,3 +80,45 @@ async def upsert_sac_account(data: dict[str, Any]):
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
+
+
+def _format_onboard_dates(records: list[dict[str, Any]]):
+    for record in records:
+        if _ONBOARD_DATE_FIELD not in record:
+            continue
+        record[_ONBOARD_DATE_FIELD] = _format_date_value(record.get(_ONBOARD_DATE_FIELD))
+    return records
+
+
+def _format_date_value(value: Any):
+    if value in (None, ""):
+        return value
+
+    if isinstance(value, datetime):
+        return value.strftime(_DATE_OUTPUT_FORMAT)
+
+    if isinstance(value, date):
+        return value.strftime(_DATE_OUTPUT_FORMAT)
+
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return value
+
+        iso_candidate = text[:-1] + "+00:00" if text.endswith("Z") else text
+        try:
+            parsed = datetime.fromisoformat(iso_candidate)
+            return parsed.strftime(_DATE_OUTPUT_FORMAT)
+        except ValueError:
+            date_part = text
+            for sep in ("T", " "):
+                if sep in date_part:
+                    date_part = date_part.split(sep, 1)[0]
+                    break
+            try:
+                parsed = datetime.strptime(date_part, "%Y-%m-%d")
+                return parsed.strftime(_DATE_OUTPUT_FORMAT)
+            except ValueError:
+                return value
+
+    return value

@@ -2,6 +2,7 @@
 
 import logging
 import re
+import warnings
 from collections.abc import Iterable
 from functools import partial
 from typing import Any
@@ -12,6 +13,12 @@ from fastapi.concurrency import run_in_threadpool
 from db import db_connection
 
 logger = logging.getLogger(__name__)
+
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    message="pandas only supports SQLAlchemy connectable",
+)
 
 _IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
