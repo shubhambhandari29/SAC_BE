@@ -29,6 +29,7 @@ ALLOWED_FILTERS = {
 _DATE_FIELDS = {
     "OnBoardDate",
     "DateCreated",
+    "DiscDate",
     "TermDate",
     "DateNotif",
     "RenewLetterDt",

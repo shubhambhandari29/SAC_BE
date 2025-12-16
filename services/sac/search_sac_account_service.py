@@ -15,7 +15,7 @@ SEARCH_QUERIES = {
             tblAcctSpecial.OnBoardDate AS [On Board Date],
             tblAcctSpecial.ServLevel AS [Service Level]
         FROM tblAcctSpecial
-        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.isSubmitted = 1
+        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.IsSubmitted = 1
         GROUP BY
             tblAcctSpecial.CustomerName,
             tblAcctSpecial.CustomerNum,
@@ -30,7 +30,7 @@ SEARCH_QUERIES = {
             tblAcctSpecial.OnBoardDate AS [On Board Date],
             tblAcctSpecial.ServLevel AS [Service Level]
         FROM tblAcctSpecial
-        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.isSubmitted = 1
+        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.IsSubmitted = 1
         GROUP BY
             tblAcctSpecial.CustomerNum,
             tblAcctSpecial.CustomerName,
@@ -48,7 +48,7 @@ SEARCH_QUERIES = {
         FROM tblPOLICIES
         INNER JOIN tblAcctSpecial
             ON tblPOLICIES.CustomerNum = tblAcctSpecial.CustomerNum
-        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.isSubmitted = 1
+        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.IsSubmitted = 1
         GROUP BY
             tblPOLICIES.PolicyNum,
             tblAcctSpecial.CustomerNum,
@@ -84,7 +84,7 @@ SEARCH_QUERIES = {
         FROM tblPolicies
         INNER JOIN tblAcctSpecial
             ON tblPolicies.CustomerNum = tblAcctSpecial.CustomerNum
-        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.isSubmitted = 1
+        WHERE tblAcctSpecial.Stage = 'Admin' AND tblAcctSpecial.IsSubmitted = 1
         GROUP BY
             tblPolicies.AcctOnPolicyName,
             tblAcctSpecial.CustomerName,
