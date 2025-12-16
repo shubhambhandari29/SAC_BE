@@ -578,16 +578,237 @@ request:
 
 
 
-dropdown.           query
- SAC 1		SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
-SAC 2	SELECT tblMGTUsers.SACName, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.EMailID FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
-Acct Owner		SELECT tblMGTUsers.SACName, tblMGTUsers.EMailID, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.TelExt, tblMGTUsers.LANID FROM tblMGTUsers
-Created By	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName;
-Risk Solutions 1	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LCTel, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
-Risk Solutions 2	SELECT tblLossCtrl.RepName, tblLossCtrl.Active, tblLossCtrl.LCEmail FROM tblLossCtrl WHERE (((tblLossCtrl.Active)="Yes")) ORDER BY tblLossCtrl.RepName
-Risk Mgr		SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+
+ SAC 1	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+SAC 2	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.EMailID FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+Acct Owner	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EMailID, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.TelExt, tblMGTUsers.LANID FROM tblMGTUsers
+Created By	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName;
+Risk Solutions 1	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LCTel, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+Risk Solutions 2	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.Active, tblLossCtrl.LCEmail FROM tblLossCtrl WHERE (((tblLossCtrl.Active)="Yes")) ORDER BY tblLossCtrl.RepName
+Risk Mgr	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
 
 
 
 HCMUsers api is not working properly, instead of updating it inserting new rows
+
+
+
+
+
+
+
+for uw
+
+[
+    {
+        "CustomerName": "Shubhtest",
+        "CustomerNum": "123456",
+        "BusinessType": null,
+        "ServLevel": null,
+        "OnBoardDate": "16-12-2025",
+        "AccountNotes": "yessss",
+        "DateCreated": null,
+        "CreatedBy": null,
+        "SAC_Contact1": null,
+        "SAC_Contact2": null,
+        "LossCtlRep1": null,
+        "LossCtlRep2": null,
+        "BranchName": "Midwest - 13 - Illinois Branch",
+        "InsuredWebsite": "aaa",
+        "SHI_Complete": "Yes",
+        "SHI_Comments": null,
+        "AgentSeg": null,
+        "ServicesReq": null,
+        "AccomForm": null,
+        "AccomType": null,
+        "Exceptions": null,
+        "ExceptType": null,
+        "LossRunNotes": null,
+        "ClaimRevNotes": null,
+        "DeductNotes": null,
+        "HCMAccess": null,
+        "DiscDate": null,
+        "LCF": null,
+        "ProducerName": null,
+        "LossRunDistFreq": null,
+        "DeductDistFreq": null,
+        "ClaimRevDistFreq": null,
+        "AcctOwner": null,
+        "OBMethod": null,
+        "CRThresh": 50000.0,
+        "AcctStatus": "Inactive",
+        "TermDate": null,
+        "TermCode": null,
+        "EmpTwoTitle": null,
+        "EmpTwoTel": null,
+        "EmpTwoEmail": null,
+        "SACApproved": null,
+        "StewAcctStatus": null,
+        "StewStDate": null,
+        "StewEndDate": null,
+        "StewEndCause": null,
+        "StewComments": null,
+        "AutoDeliver": null,
+        "TotalPrem": null,
+        "DateNotif": null,
+        "RiskSolMgr": null,
+        "HCM_LOC_ONLY": null,
+        "RenewLetterDt": null,
+        "RelatedEnt": null,
+        "ChangeNotes": null,
+        "NCMStatus": null,
+        "NCMStartDt": null,
+        "NCMEndDt": null,
+        "NCMTermReason": null,
+        "NCMComments": null,
+        "NCMType": null,
+        "Stage": "Underwriter",
+        "IsSubmitted": 0
+    }
+]
+
+
+director
+
+
+[
+    {
+        "CustomerName": "Shubhtest",
+        "CustomerNum": "123456",
+        "BusinessType": "Special Account and Stewardship Account",
+        "ServLevel": null,
+        "OnBoardDate": "16-12-2025",
+        "AccountNotes": "yessssoo",
+        "DateCreated": null,
+        "CreatedBy": null,
+        "SAC_Contact1": "Marc De Luca",
+        "SAC_Contact2": "Jenna Houle",
+        "LossCtlRep1": "Richelle Chandler",
+        "LossCtlRep2": "Richelle Chandler",
+        "BranchName": "Midwest - 13 - Illinois Branch",
+        "InsuredWebsite": "aaa",
+        "SHI_Complete": "Yes",
+        "SHI_Comments": null,
+        "AgentSeg": null,
+        "ServicesReq": null,
+        "AccomForm": null,
+        "AccomType": null,
+        "Exceptions": null,
+        "ExceptType": null,
+        "LossRunNotes": null,
+        "ClaimRevNotes": null,
+        "DeductNotes": null,
+        "HCMAccess": "Not Requested",
+        "DiscDate": null,
+        "LCF": null,
+        "ProducerName": null,
+        "LossRunDistFreq": "Not Needed",
+        "DeductDistFreq": "See Notes",
+        "ClaimRevDistFreq": null,
+        "AcctOwner": "Sharon Carruth",
+        "OBMethod": "Remote",
+        "CRThresh": 50000.0,
+        "AcctStatus": "Inactive",
+        "TermDate": null,
+        "TermCode": null,
+        "EmpTwoTitle": null,
+        "EmpTwoTel": null,
+        "EmpTwoEmail": null,
+        "SACApproved": null,
+        "StewAcctStatus": null,
+        "StewStDate": null,
+        "StewEndDate": null,
+        "StewEndCause": null,
+        "StewComments": null,
+        "AutoDeliver": null,
+        "TotalPrem": null,
+        "DateNotif": null,
+        "RiskSolMgr": "Tarek Helwani",
+        "HCM_LOC_ONLY": null,
+        "RenewLetterDt": null,
+        "RelatedEnt": null,
+        "ChangeNotes": null,
+        "NCMStatus": "Inactive",
+        "NCMStartDt": "18-12-2025",
+        "NCMEndDt": null,
+        "NCMTermReason": null,
+        "NCMComments": null,
+        "NCMType": "demo1",
+        "Stage": "Director",
+        "IsSubmitted": 1
+    }
+]
+
+
+
+admin
+
+
+[
+    {
+        "CustomerName": "Shubhtest",
+        "CustomerNum": "123456",
+        "BusinessType": "Special Account and Stewardship Account",
+        "ServLevel": "5.Exception",
+        "OnBoardDate": "15-12-2025",
+        "AccountNotes": "yessssoo",
+        "DateCreated": null,
+        "CreatedBy": null,
+        "SAC_Contact1": "Marc De Luca",
+        "SAC_Contact2": "Jenna Houle",
+        "LossCtlRep1": "Richelle Chandler",
+        "LossCtlRep2": "Richelle Chandler",
+        "BranchName": "Midwest - 13 - Illinois Branch",
+        "InsuredWebsite": "aaa",
+        "SHI_Complete": "Yes",
+        "SHI_Comments": "xasbas",
+        "AgentSeg": null,
+        "ServicesReq": "No",
+        "AccomForm": "Yes",
+        "AccomType": "demo2",
+        "Exceptions": "Yes",
+        "ExceptType": "LR - Decreased Frequency",
+        "LossRunNotes": "nnn",
+        "ClaimRevNotes": "llll",
+        "DeductNotes": "aaaa",
+        "HCMAccess": "Not Requested",
+        "DiscDate": "2025-12-16",
+        "LCF": null,
+        "ProducerName": null,
+        "LossRunDistFreq": "Not Needed",
+        "DeductDistFreq": "See Notes",
+        "ClaimRevDistFreq": null,
+        "AcctOwner": "Sharon Carruth",
+        "OBMethod": "Remote",
+        "CRThresh": 50000.0,
+        "AcctStatus": "Inactive",
+        "TermDate": "13-12-2025",
+        "TermCode": "Competitive Pricing",
+        "EmpTwoTitle": null,
+        "EmpTwoTel": null,
+        "EmpTwoEmail": null,
+        "SACApproved": null,
+        "StewAcctStatus": null,
+        "StewStDate": null,
+        "StewEndDate": null,
+        "StewEndCause": null,
+        "StewComments": null,
+        "AutoDeliver": null,
+        "TotalPrem": null,
+        "DateNotif": "15-12-2025",
+        "RiskSolMgr": "Tarek Helwani",
+        "HCM_LOC_ONLY": "Yes",
+        "RenewLetterDt": null,
+        "RelatedEnt": null,
+        "ChangeNotes": "das c ",
+        "NCMStatus": "Inactive",
+        "NCMStartDt": "17-12-2025",
+        "NCMEndDt": "18-12-2025",
+        "NCMTermReason": "demo1",
+        "NCMComments": null,
+        "NCMType": "demo1",
+        "Stage": "Admin",
+        "IsSubmitted": 0
+    }
+]
  
