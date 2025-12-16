@@ -46,3 +46,15 @@ async def test_get_dropdown_values_invalid_name():
         await svc.get_dropdown_values("unknown")
 
     assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_get_dropdown_values_alias(monkeypatch):
+    async def fake_run(query, params):
+        return [{"SACName": "Alex"}]
+
+    monkeypatch.setattr(svc, "run_raw_query_async", fake_run)
+
+    result = await svc.get_dropdown_values("SAC_Contact_1")
+
+    assert result == [{"SACName": "Alex"}]

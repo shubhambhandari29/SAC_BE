@@ -51,9 +51,24 @@ _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
     """,
 }
 
+_DROPDOWN_NAME_MAP: dict[str, str] = {
+    "sac_contact_1": "sac_1",
+    "sac_contact1": "sac_1",
+    "sac_contact_2": "sac_2",
+    "sac_contact2": "sac_2",
+    "sac_contact": "sac_2",
+    "acctowner": "acct_owner",
+    "createdby": "created_by",
+    "lossctlrep1": "risk_solutions_1",
+    "lossctlrep_1": "risk_solutions_1",
+    "lossctlrep2": "risk_solutions_2",
+    "lossctlrep_2": "risk_solutions_2",
+    "risksolmgr": "risk_mgr",
+}
+
 
 async def get_dropdown_values(name: str) -> list[dict[str, Any]]:
-    normalized_name = name.lower()
+    normalized_name = _resolve_dropdown_name(name)
     query_def = _DROPDOWN_QUERIES.get(normalized_name)
     if not query_def:
         raise HTTPException(status_code=404, detail={"error": f"Unknown dropdown '{name}'"})
@@ -73,3 +88,8 @@ def _normalize_query_definition(query_def: DropdownQuery) -> tuple[str, list[Any
 
     query, params = query_def
     return query, list(params)
+
+
+def _resolve_dropdown_name(raw_name: str) -> str:
+    normalized = raw_name.strip().lower()
+    return _DROPDOWN_NAME_MAP.get(normalized, normalized)
