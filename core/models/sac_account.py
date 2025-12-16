@@ -11,9 +11,12 @@ class SacAccountUpsert(BaseModel):
 
     CustomerNum: str = Field(..., min_length=1)
     CustomerName: str | None = None
-    OnBoardDate: date | None = None
+    OnBoardDate: str | None = None
     ServLevel: str | None = None
     Stage: str | None = None
-    isSubmitted: str | None = None
+    IsSubmitted: int | None = None
     AcctOwner: str | None = None
     BusinessType: str | None = None
+
+    class Config:
+        extra = "allow"

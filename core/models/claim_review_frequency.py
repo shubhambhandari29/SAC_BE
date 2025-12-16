@@ -12,7 +12,7 @@ class ClaimReviewFrequencyEntry(BaseModel):
     CustomerNum: str = Field(..., min_length=1)
     MthNum: int = Field(..., ge=1, le=12)
     RptMth: int | None = None
-    CompDate: date | None = None
+    CompDate: str | None = None
     RptType: Any | None = None
     DelivMeth: Any | None = None
     CRNumNarr: int | None = None

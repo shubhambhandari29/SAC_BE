@@ -15,4 +15,4 @@ class DistributionEntry(BaseModel):
     EMailAddress: EmailStr | None = None
 
     class Config:
-        extra = "ignore"
+        extra = "allow"

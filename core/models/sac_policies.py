@@ -20,7 +20,7 @@ class SacPolicyUpsert(BaseModel):
     PolicyType: str | None = None
     AgentCode: str | None = None
     AgentName: str | None = None
-    InceptDate: date | None = None
+    InceptDate: str | None = None
 
 
 class SacPolicyBulkFieldUpdate(BaseModel):

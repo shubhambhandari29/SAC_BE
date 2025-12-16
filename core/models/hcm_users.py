@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field
 
 
 class HCMUserUpsert(BaseModel):
+    PK_Number:int | None = None
     UserTitle: str | None = None
     UserID: str = Field(..., min_length=1)
     UserName: str | None = None
