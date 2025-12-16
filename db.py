@@ -3,9 +3,14 @@
 from contextlib import contextmanager
 
 import pyodbc
-
+import warnings
 from core.config import settings
 
+
+warnings.filterwarnings(
+    "ignore",category=UserWarning,
+      message="pandas only supports SQLAlchemy connectable"
+)
 
 # Build SQL connection string
 def _build_connection_string() -> str:
