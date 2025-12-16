@@ -10,32 +10,32 @@ logger = logging.getLogger(__name__)
 DropdownQuery = str | tuple[str, list[Any]]
 
 _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
-    "sac_1": """
+    "SAC_Contact1": """
         SELECT SACName
         FROM tblMGTUsers
         ORDER BY SACName
     """,
-    "sac_2": """
+    "SAC_Contact2": """
         SELECT SACName, EmpTitle, TelNum, EMailID
         FROM tblMGTUsers
         ORDER BY SACName
     """,
-    "acct_owner": """
+    "AcctOwner": """
         SELECT SACName, EMailID, EmpTitle, TelNum, TelExt, LANID
         FROM tblMGTUsers
         ORDER BY SACName
     """,
-    "created_by": """
+    "CreatedBy": """
         SELECT SACName
         FROM tblMGTUsers
         ORDER BY SACName
     """,
-    "risk_solutions_1": """
+    "LossCtlRep1": """
         SELECT RepName, LCEmail, LCTel, LAN_ID
         FROM tblLossCtrl
         ORDER BY RepName
     """,
-    "risk_solutions_2": (
+    "LossCtlRep2": (
         """
         SELECT RepName, Active, LCEmail
         FROM tblLossCtrl
@@ -44,32 +44,16 @@ _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
         """,
         ["Yes"],
     ),
-    "risk_mgr": """
+    "RiskSolMgr": """
         SELECT RepName, LCEmail, LAN_ID
         FROM tblLossCtrl
         ORDER BY RepName
     """,
 }
 
-_DROPDOWN_NAME_MAP: dict[str, str] = {
-    "sac_contact_1": "sac_1",
-    "sac_contact1": "sac_1",
-    "sac_contact_2": "sac_2",
-    "sac_contact2": "sac_2",
-    "sac_contact": "sac_2",
-    "acctowner": "acct_owner",
-    "createdby": "created_by",
-    "lossctlrep1": "risk_solutions_1",
-    "lossctlrep_1": "risk_solutions_1",
-    "lossctlrep2": "risk_solutions_2",
-    "lossctlrep_2": "risk_solutions_2",
-    "risksolmgr": "risk_mgr",
-}
-
 
 async def get_dropdown_values(name: str) -> list[dict[str, Any]]:
-    normalized_name = _resolve_dropdown_name(name)
-    query_def = _DROPDOWN_QUERIES.get(normalized_name)
+    query_def = _DROPDOWN_QUERIES.get(name)
     if not query_def:
         raise HTTPException(status_code=404, detail={"error": f"Unknown dropdown '{name}'"})
 
@@ -88,8 +72,3 @@ def _normalize_query_definition(query_def: DropdownQuery) -> tuple[str, list[Any
 
     query, params = query_def
     return query, list(params)
-
-
-def _resolve_dropdown_name(raw_name: str) -> str:
-    normalized = raw_name.strip().lower()
-    return _DROPDOWN_NAME_MAP.get(normalized, normalized)
