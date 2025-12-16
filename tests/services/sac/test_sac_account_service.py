@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from fastapi import HTTPException
@@ -142,3 +142,28 @@ async def test_upsert_sac_account(monkeypatch):
 
     result = await svc.upsert_sac_account({"CustomerNum": "1"})
     assert result == {"message": "ok"}
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_account_normalizes_dates(monkeypatch):
+    captured = {}
+
+    async def fake_merge(table, data_list, key_columns, **kwargs):
+        captured["data_list"] = data_list
+        captured["table"] = table
+        return {"message": "ok"}
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = {
+        "CustomerNum": "1",
+        "OnBoardDate": "05-01-2024",
+        "DateCreated": "2024-01-01",
+        "NCMEndDt": "2024/03/15",
+    }
+    await svc.upsert_sac_account(payload)
+
+    row = captured["data_list"][0]
+    assert row["OnBoardDate"] == date(2024, 1, 5)
+    assert row["DateCreated"] == date(2024, 1, 1)
+    assert row["NCMEndDt"] == date(2024, 3, 15)

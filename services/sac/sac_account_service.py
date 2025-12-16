@@ -80,9 +80,10 @@ async def get_sac_account(query_params: dict[str, Any]):
 
 async def upsert_sac_account(data: dict[str, Any]):
     try:
+        normalized_data = _normalize_date_fields_for_upsert(data)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
-            data_list=[data],
+            data_list=[normalized_data],
             key_columns=["CustomerNum"],
         )
     except Exception as e:
@@ -97,6 +98,15 @@ def _format_date_fields(records: list[dict[str, Any]]):
                 continue
             record[field] = _format_date_value(record.get(field))
     return records
+
+
+def _normalize_date_fields_for_upsert(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(data)
+    for field in _DATE_FIELDS:
+        if field not in normalized:
+            continue
+        normalized[field] = _parse_upsert_date_value(normalized[field])
+    return normalized
 
 
 def _format_date_value(value: Any):
@@ -127,6 +137,36 @@ def _format_date_value(value: Any):
             try:
                 parsed = datetime.strptime(date_part, "%Y-%m-%d")
                 return parsed.strftime(_DATE_OUTPUT_FORMAT)
+            except ValueError:
+                return value
+
+    return value
+
+
+def _parse_upsert_date_value(value: Any):
+    if value in (None, ""):
+        return value
+
+    if isinstance(value, datetime):
+        return value.date()
+
+    if isinstance(value, date):
+        return value
+
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return value
+
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"):
+            try:
+                return datetime.strptime(text, fmt).date()
+            except ValueError:
+                continue
+
+        if text.endswith("Z"):
+            try:
+                return datetime.fromisoformat(text[:-1]).date()
             except ValueError:
                 return value
 
