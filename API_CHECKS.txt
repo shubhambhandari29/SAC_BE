@@ -575,3 +575,19 @@ request:
 
 
  update [CLMAA_SpecialAccounts].[dbo].[tblPolicies] set AccountName = 'Arba Group Inc The' where PK_number = '35697'
+
+
+
+
+ SAC 1	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+SAC 2	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.EMailID FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+Acct Owner	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EMailID, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.TelExt, tblMGTUsers.LANID FROM tblMGTUsers
+Created By	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName;
+Risk Solutions 1	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LCTel, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+Risk Solutions 2	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.Active, tblLossCtrl.LCEmail FROM tblLossCtrl WHERE (((tblLossCtrl.Active)="Yes")) ORDER BY tblLossCtrl.RepName
+Risk Mgr	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+
+
+
+HCMUsers api is not working properly, instead of updating it inserting new rows
+ 
