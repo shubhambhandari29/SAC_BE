@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from fastapi import HTTPException
 
@@ -15,13 +17,27 @@ async def test_get_sac_account_without_branch(monkeypatch):
     async def fake_fetch(table, filters):
         calls["filters"] = filters
         assert table == svc.TABLE_NAME
-        return [{"CustomerNum": "1", "OnBoardDate": "2024-01-05 00:00:00"}]
+        return [
+            {
+                "CustomerNum": "1",
+                "OnBoardDate": "2024-01-05 00:00:00",
+                "DateCreated": "2023-12-31T00:00:00",
+                "TermDate": datetime(2025, 6, 1, 0, 0),
+            }
+        ]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     result = await svc.get_sac_account({"CustomerNum": "1"})
-    assert result == [{"CustomerNum": "1", "OnBoardDate": "05-01-2024"}]
+    assert result == [
+        {
+            "CustomerNum": "1",
+            "OnBoardDate": "05-01-2024",
+            "DateCreated": "31-12-2023",
+            "TermDate": "01-06-2025",
+        }
+    ]
     assert calls["filters"] == {"CustomerNum": "1"}
 
 
@@ -36,14 +52,26 @@ async def test_get_sac_account_with_branch(monkeypatch):
         captured["query"] = query
         captured["params"] = params
         return [
-            {"CustomerNum": "1", "BranchName": "NY", "OnBoardDate": "2024-02-10T00:00:00Z"}
+            {
+                "CustomerNum": "1",
+                "BranchName": "NY",
+                "OnBoardDate": "2024-02-10T00:00:00Z",
+                "RenewLetterDt": "2024-02-01",
+            }
         ]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "run_raw_query_async", fake_raw)
 
     result = await svc.get_sac_account({})
-    assert result == [{"CustomerNum": "1", "BranchName": "NY", "OnBoardDate": "10-02-2024"}]
+    assert result == [
+        {
+            "CustomerNum": "1",
+            "BranchName": "NY",
+            "OnBoardDate": "10-02-2024",
+            "RenewLetterDt": "01-02-2024",
+        }
+    ]
     assert "BranchName LIKE ?" in captured["query"]
     assert captured["params"] == ["Active", "NY%", "LA%"]
 
@@ -61,6 +89,35 @@ async def test_get_sac_account_handles_null_onboard_date(monkeypatch):
 
     result = await svc.get_sac_account({})
     assert result == [{"CustomerNum": "1", "OnBoardDate": None}]
+
+
+@pytest.mark.anyio
+async def test_get_sac_account_formats_additional_dates(monkeypatch):
+    def fake_sanitize(params, allowed):
+        return {}
+
+    async def fake_fetch(table, filters):
+        return [
+            {
+                "CustomerNum": "1",
+                "DateNotif": "2024-07-04 09:00:00",
+                "NCMStartDt": "2024-03-15",
+                "NCMEndDt": "2024-03-20",
+            }
+        ]
+
+    monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
+    monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
+
+    result = await svc.get_sac_account({})
+    assert result == [
+        {
+            "CustomerNum": "1",
+            "DateNotif": "04-07-2024",
+            "NCMStartDt": "15-03-2024",
+            "NCMEndDt": "20-03-2024",
+        }
+    ]
 
 
 @pytest.mark.anyio

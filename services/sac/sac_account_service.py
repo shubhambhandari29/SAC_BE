@@ -26,7 +26,15 @@ ALLOWED_FILTERS = {
     "AcctOwner",
     "BranchName",
 }
-_ONBOARD_DATE_FIELD = "OnBoardDate"
+_DATE_FIELDS = {
+    "OnBoardDate",
+    "DateCreated",
+    "TermDate",
+    "DateNotif",
+    "RenewLetterDt",
+    "NCMStartDt",
+    "NCMEndDt",
+}
 _DATE_OUTPUT_FORMAT = "%d-%m-%Y"
 
 
@@ -37,14 +45,14 @@ async def get_sac_account(query_params: dict[str, Any]):
 
         if not branch_filter:
             records = await fetch_records_async(table=TABLE_NAME, filters=filters)
-            return _format_onboard_dates(records)
+            return _format_date_fields(records)
 
         branch_terms = [term for term in re.split(r"[ ,&]+", str(branch_filter)) if term.strip()]
 
         # Fall back to simple filtering if nothing usable came from the branch filter.
         if not branch_terms:
             records = await fetch_records_async(table=TABLE_NAME, filters=filters)
-            return _format_onboard_dates(records)
+            return _format_date_fields(records)
 
         clauses: list[str] = []
         params: list[Any] = []
@@ -62,7 +70,7 @@ async def get_sac_account(query_params: dict[str, Any]):
             query += " WHERE " + " AND ".join(clauses)
 
         records = await run_raw_query_async(query, list(params))
-        return _format_onboard_dates(records)
+        return _format_date_fields(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -82,11 +90,12 @@ async def upsert_sac_account(data: dict[str, Any]):
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
 
-def _format_onboard_dates(records: list[dict[str, Any]]):
+def _format_date_fields(records: list[dict[str, Any]]):
     for record in records:
-        if _ONBOARD_DATE_FIELD not in record:
-            continue
-        record[_ONBOARD_DATE_FIELD] = _format_date_value(record.get(_ONBOARD_DATE_FIELD))
+        for field in _DATE_FIELDS:
+            if field not in record:
+                continue
+            record[field] = _format_date_value(record.get(field))
     return records
 
 
