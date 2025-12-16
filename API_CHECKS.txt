@@ -578,14 +578,14 @@ request:
 
 
 
-
- SAC 1	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
-SAC 2	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.EMailID FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
-Acct Owner	Drop-Down	SELECT tblMGTUsers.SACName, tblMGTUsers.EMailID, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.TelExt, tblMGTUsers.LANID FROM tblMGTUsers
-Created By	Drop-Down	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName;
-Risk Solutions 1	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LCTel, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
-Risk Solutions 2	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.Active, tblLossCtrl.LCEmail FROM tblLossCtrl WHERE (((tblLossCtrl.Active)="Yes")) ORDER BY tblLossCtrl.RepName
-Risk Mgr	Drop-Down	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+dropdown.           query
+ SAC 1		SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+SAC 2	SELECT tblMGTUsers.SACName, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.EMailID FROM tblMGTUsers ORDER BY tblMGTUsers.SACName
+Acct Owner		SELECT tblMGTUsers.SACName, tblMGTUsers.EMailID, tblMGTUsers.EmpTitle, tblMGTUsers.TelNum, tblMGTUsers.TelExt, tblMGTUsers.LANID FROM tblMGTUsers
+Created By	SELECT tblMGTUsers.SACName FROM tblMGTUsers ORDER BY tblMGTUsers.SACName;
+Risk Solutions 1	SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LCTel, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
+Risk Solutions 2	SELECT tblLossCtrl.RepName, tblLossCtrl.Active, tblLossCtrl.LCEmail FROM tblLossCtrl WHERE (((tblLossCtrl.Active)="Yes")) ORDER BY tblLossCtrl.RepName
+Risk Mgr		SELECT tblLossCtrl.RepName, tblLossCtrl.LCEmail, tblLossCtrl.LAN_ID FROM tblLossCtrl ORDER BY tblLossCtrl.RepName;
 
 
 

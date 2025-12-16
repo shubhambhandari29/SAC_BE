@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.auth import router as auth_router
+from api.dropdowns import router as dropdowns_router
 from api.sac.claim_review_distribution import router as claim_review_distribution_router
 from api.sac.claim_review_frequency import router as claim_review_frequency_router
 from api.sac.deduct_bill_distribution import router as deduct_bill_distribution_router
@@ -50,6 +51,7 @@ async def health_check():
 
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(dropdowns_router, prefix="/dropdowns", tags=["dropdowns"])
 
 # sac
 app.include_router(sac_account_router, prefix="/sac_account", tags=["sac_account"])
