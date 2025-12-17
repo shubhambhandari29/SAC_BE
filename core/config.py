@@ -35,7 +35,7 @@ class Settings:
     DB_NAME: Optional[str] = _require_env("DB_NAME", optional=USE_KEY_VAULT_FLAG)
     DB_DRIVER: str = os.getenv("DB_DRIVER", "{ODBC Driver 18 for SQL Server}")
     DB_AUTH: Optional[str] = os.getenv("DB_AUTH")
-    USE_AZURE_AD_TOKEN_AUTH: bool = _as_bool(os.getenv("USE_AZURE_AD_TOKEN_AUTH"), default=False)
+    USE_AZURE_AD_TOKEN_AUTH: bool = _as_bool(os.getenv("USE_AZURE_AD_TOKEN_AUTH"), default=False)  #set True in azure
 
     # Optional secret names for Key Vault-driven configuration
     DB_SERVER_SECRET_NAME: Optional[str] = os.getenv("DB_SERVER_SECRET_NAME")
