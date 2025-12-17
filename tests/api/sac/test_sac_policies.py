@@ -49,7 +49,7 @@ def test_update_field_for_all_policies(make_test_client, monkeypatch):
     client = make_test_client(sac_policies.router)
 
     payload = {
-        "fieldName": "Stage",
+        "fieldName": "AccountName",
         "fieldValue": "Bound",
         "updateVia": "CustomerNum",
         "updateViaValue": "1",

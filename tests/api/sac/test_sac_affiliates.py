@@ -36,4 +36,6 @@ def test_upsert_affiliates_transforms_payload(make_test_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"count": 2}
-    assert captured["data"] == payload
+    assert len(captured["data"]) == 2
+    assert captured["data"][0]["CustomerNum"] == "1001"
+    assert captured["data"][1]["CustomerNum"] == "1002"

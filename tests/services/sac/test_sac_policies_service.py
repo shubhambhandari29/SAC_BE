@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from fastapi import HTTPException
 
@@ -12,23 +14,24 @@ async def test_get_sac_policies(monkeypatch):
 
     async def fake_fetch(**kwargs):
         assert kwargs["filters"] == {"CustomerNum": "1"}
-        return [{"PolicyNum": "P1"}]
+        return [{"PolicyNum": "P1", "EffectiveDate": "2024-01-01"}]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     result = await svc.get_sac_policies({"CustomerNum": "1"})
-    assert result == [{"PolicyNum": "P1"}]
+    assert result == [{"PolicyNum": "P1", "EffectiveDate": "01-01-2024"}]
 
 
 @pytest.mark.anyio
 async def test_upsert_sac_policies(monkeypatch):
     async def fake_merge(**kwargs):
         assert kwargs["data_list"][0]["CustomerNum"] == "1"
+        assert kwargs["data_list"][0]["EffectiveDate"] == date(2024, 1, 1)
         return {"message": "ok"}
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
-    result = await svc.upsert_sac_policies({"CustomerNum": "1"})
+    result = await svc.upsert_sac_policies({"CustomerNum": "1", "EffectiveDate": "01-01-2024"})
     assert result == {"message": "ok"}
 
 
@@ -68,15 +71,15 @@ async def test_update_field_for_all_policies_runs_query(monkeypatch):
     monkeypatch.setattr(svc, "run_in_threadpool", fake_run_in_threadpool)
 
     payload = {
-        "fieldName": "Stage",
-        "fieldValue": "Bound",
+        "fieldName": "EffectiveDate",
+        "fieldValue": "01-01-2024",
         "updateVia": "CustomerNum",
         "updateViaValue": "1",
     }
     result = await svc.update_field_for_all_policies(payload)
     assert result == {"message": "Update successful"}
     assert "UPDATE" in executed["query"]
-    assert executed["params"] == ("Bound", "1")
+    assert executed["params"] == (date(2024, 1, 1), "1")
 
 
 @pytest.mark.anyio

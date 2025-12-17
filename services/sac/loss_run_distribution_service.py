@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
+from core.date_utils import format_records_dates, normalize_payload_list
 from core.db_helpers import (
     delete_records_async,
     fetch_records_async,
@@ -19,7 +20,8 @@ ALLOWED_FILTERS = {"CustomerNum", "EMailAddress"}
 async def get_distribution(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params, ALLOWED_FILTERS)
-        return await fetch_records_async(table=TABLE_NAME, filters=filters)
+        records = await fetch_records_async(table=TABLE_NAME, filters=filters)
+        return format_records_dates(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -29,9 +31,10 @@ async def get_distribution(query_params: dict[str, Any]):
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
     try:
+        normalized = normalize_payload_list(data_list)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
-            data_list=data_list,
+            data_list=normalized,
             key_columns=["CustomerNum", "EMailAddress"],
         )
     except Exception as e:

@@ -2,11 +2,14 @@
 
 import logging
 import re
-from datetime import date, datetime
 from typing import Any
 
 from fastapi import HTTPException
 
+from core.date_utils import (
+    format_records_dates,
+    normalize_payload_dates,
+)
 from core.db_helpers import (
     fetch_records_async,
     merge_upsert_records_async,
@@ -36,7 +39,6 @@ _DATE_FIELDS = {
     "NCMStartDt",
     "NCMEndDt",
 }
-_DATE_OUTPUT_FORMAT = "%d-%m-%Y"
 
 
 async def get_sac_account(query_params: dict[str, Any]):
@@ -93,82 +95,8 @@ async def upsert_sac_account(data: dict[str, Any]):
 
 
 def _format_date_fields(records: list[dict[str, Any]]):
-    for record in records:
-        for field in _DATE_FIELDS:
-            if field not in record:
-                continue
-            record[field] = _format_date_value(record.get(field))
-    return records
+    return format_records_dates(records, fields=_DATE_FIELDS)
 
 
 def _normalize_date_fields_for_upsert(data: dict[str, Any]) -> dict[str, Any]:
-    normalized = dict(data)
-    for field in _DATE_FIELDS:
-        if field not in normalized:
-            continue
-        normalized[field] = _parse_upsert_date_value(normalized[field])
-    return normalized
-
-
-def _format_date_value(value: Any):
-    if value in (None, ""):
-        return value
-
-    if isinstance(value, datetime):
-        return value.strftime(_DATE_OUTPUT_FORMAT)
-
-    if isinstance(value, date):
-        return value.strftime(_DATE_OUTPUT_FORMAT)
-
-    if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return value
-
-        iso_candidate = text[:-1] + "+00:00" if text.endswith("Z") else text
-        try:
-            parsed = datetime.fromisoformat(iso_candidate)
-            return parsed.strftime(_DATE_OUTPUT_FORMAT)
-        except ValueError:
-            date_part = text
-            for sep in ("T", " "):
-                if sep in date_part:
-                    date_part = date_part.split(sep, 1)[0]
-                    break
-            try:
-                parsed = datetime.strptime(date_part, "%Y-%m-%d")
-                return parsed.strftime(_DATE_OUTPUT_FORMAT)
-            except ValueError:
-                return value
-
-    return value
-
-
-def _parse_upsert_date_value(value: Any):
-    if value in (None, ""):
-        return value
-
-    if isinstance(value, datetime):
-        return value.date()
-
-    if isinstance(value, date):
-        return value
-
-    if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return value
-
-        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%d/%m/%Y"):
-            try:
-                return datetime.strptime(text, fmt).date()
-            except ValueError:
-                continue
-
-        if text.endswith("Z"):
-            try:
-                return datetime.fromisoformat(text[:-1]).date()
-            except ValueError:
-                return value
-
-    return value
+    return normalize_payload_dates(data, fields=_DATE_FIELDS)

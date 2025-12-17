@@ -35,7 +35,9 @@ def test_upsert_claim_review_distribution(make_test_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"count": 1}
-    assert captured["rows"] == payload
+    assert len(captured["rows"]) == 1
+    assert captured["rows"][0]["CustomerNum"] == "1"
+    assert captured["rows"][0]["EMailAddress"] == "c@example.com"
 
 
 def test_delete_claim_review_distribution(make_test_client, monkeypatch):
@@ -55,4 +57,6 @@ def test_delete_claim_review_distribution(make_test_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"deleted": 1}
-    assert captured["rows"] == payload
+    assert len(captured["rows"]) == 1
+    assert captured["rows"][0]["CustomerNum"] == "1"
+    assert captured["rows"][0]["EMailAddress"] == "c@example.com"

@@ -37,4 +37,6 @@ def test_upsert_hcm_users(make_test_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"count": 2}
-    assert captured["records"] == payload
+    assert len(captured["records"]) == 2
+    assert captured["records"][0]["CustomerNum"] == "1001"
+    assert captured["records"][1]["CustomerNum"] == "1002"

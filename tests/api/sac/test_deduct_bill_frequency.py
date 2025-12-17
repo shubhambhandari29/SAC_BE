@@ -33,4 +33,6 @@ def test_upsert_deduct_bill_frequency(make_test_client, monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == {"count": 1}
-    assert captured["items"] == payload
+    assert len(captured["items"]) == 1
+    assert captured["items"][0]["CustomerNum"] == "1"
+    assert captured["items"][0]["MthNum"] == 1

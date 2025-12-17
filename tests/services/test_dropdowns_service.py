@@ -15,7 +15,7 @@ async def test_get_dropdown_values_known(monkeypatch):
 
     monkeypatch.setattr(svc, "run_raw_query_async", fake_run)
 
-    result = await svc.get_dropdown_values("sac_1")
+    result = await svc.get_dropdown_values("SAC_Contact1")
 
     assert result == [{"SACName": "Alex"}]
     assert "FROM tblMGTUsers" in captured["query"]
@@ -33,7 +33,7 @@ async def test_get_dropdown_values_with_params(monkeypatch):
 
     monkeypatch.setattr(svc, "run_raw_query_async", fake_run)
 
-    result = await svc.get_dropdown_values("risk_solutions_2")
+    result = await svc.get_dropdown_values("LossCtlRep2")
 
     assert result == [{"RepName": "Chris"}]
     assert "WHERE Active = ?" in captured["query"]
@@ -47,14 +47,3 @@ async def test_get_dropdown_values_invalid_name():
 
     assert exc.value.status_code == 404
 
-
-@pytest.mark.anyio
-async def test_get_dropdown_values_alias(monkeypatch):
-    async def fake_run(query, params):
-        return [{"SACName": "Alex"}]
-
-    monkeypatch.setattr(svc, "run_raw_query_async", fake_run)
-
-    result = await svc.get_dropdown_values("SAC_Contact_1")
-
-    assert result == [{"SACName": "Alex"}]

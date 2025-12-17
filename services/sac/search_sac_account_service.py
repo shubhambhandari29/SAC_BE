@@ -2,6 +2,7 @@ import logging
 
 from fastapi import HTTPException
 
+from core.date_utils import format_records_dates
 from core.db_helpers import run_raw_query_async
 
 logger = logging.getLogger(__name__)
@@ -102,7 +103,8 @@ async def search_sac_account_records(search_by: str):
 
     try:
         query = SEARCH_QUERIES[search_by]
-        return await run_raw_query_async(query)
+        records = await run_raw_query_async(query)
+        return format_records_dates(records)
     except Exception as e:
         logger.warning(f"Search failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e

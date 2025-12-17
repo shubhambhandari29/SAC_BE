@@ -54,12 +54,13 @@ def make_request(cookies: str | None = None) -> Request:
 @pytest.mark.anyio
 async def test_login_user_success(monkeypatch):
     user_record = {
-        "id": 1,
-        "first_name": "Test",
-        "last_name": "User",
-        "email": "test@example.com",
-        "role": "admin",
-        "password": "hashed",
+        "ID": 1,
+        "FirstName": "Test",
+        "LastName": "User",
+        "Email": "test@example.com",
+        "Role": "admin",
+        "BranchName": "NY",
+        "Password": "hashed",
     }
 
     monkeypatch.setattr(svc, "get_user_by_email", lambda _: user_record)
@@ -117,9 +118,11 @@ async def test_refresh_user_token(monkeypatch):
 
 
 def test_get_user_by_email(monkeypatch):
-    monkeypatch.setattr(svc, "run_raw_query", lambda query, params: [{"id": 1, "email": params[0]}])
+    monkeypatch.setattr(
+        svc, "run_raw_query", lambda query, params: [{"ID": 1, "Email": params[0]}]
+    )
     result = svc.get_user_by_email("user@example.com")
-    assert result["email"] == "user@example.com"
+    assert result["Email"] == "user@example.com"
 
 
 def test_get_user_by_email_not_found(monkeypatch):

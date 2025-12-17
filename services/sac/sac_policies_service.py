@@ -4,6 +4,7 @@ from typing import Any
 from fastapi import HTTPException
 from fastapi.concurrency import run_in_threadpool
 
+from core.date_utils import format_records_dates, normalize_payload_dates, parse_date_input
 from core.db_helpers import (
     fetch_records_async,
     merge_upsert_records_async,
@@ -22,7 +23,8 @@ PREMIUM_ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod", "PolicyStatus"}
 async def get_sac_policies(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params, ALLOWED_FILTERS)
-        return await fetch_records_async(table=TABLE_NAME, filters=filters)
+        records = await fetch_records_async(table=TABLE_NAME, filters=filters)
+        return format_records_dates(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -32,9 +34,10 @@ async def get_sac_policies(query_params: dict[str, Any]):
 
 async def upsert_sac_policies(data: dict[str, Any]):
     try:
+        normalized = normalize_payload_dates(data)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
-            data_list=[data],
+            data_list=[normalized],
             key_columns=["CustomerNum", "PolicyNum", "PolMod"],
         )
     except Exception as e:
@@ -49,6 +52,11 @@ async def update_field_for_all_policies(data: dict[str, Any]):
     if "fieldValue" not in data or "updateViaValue" not in data:
         raise HTTPException(status_code=400, detail={"error": "Missing required values"})
 
+    field_value = data["fieldValue"]
+    if isinstance(field_value, str):
+        parsed = parse_date_input(field_value)
+        field_value = parsed
+
     query = f"""
         UPDATE {TABLE_NAME}
         SET {field_name} = ?
@@ -58,7 +66,7 @@ async def update_field_for_all_policies(data: dict[str, Any]):
     def _execute_update():
         with db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute(query, (data["fieldValue"], data["updateViaValue"]))
+            cursor.execute(query, (field_value, data["updateViaValue"]))
             conn.commit()
         return {"message": "Update successful"}
 

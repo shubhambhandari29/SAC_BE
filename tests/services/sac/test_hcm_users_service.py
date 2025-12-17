@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from services.sac import hcm_users_service as svc
@@ -11,13 +13,13 @@ async def test_get_hcm_users_remaps_filters(monkeypatch):
 
     async def fake_fetch(table, filters):
         assert filters == {"CustNum": "C1"}
-        return [{"CustNum": "C1", "UserID": "u1"}]
+        return [{"CustNum": "C1", "UserID": "u1", "AccessDate": "2024-05-01"}]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     result = await svc.get_hcm_users({"CustomerNum": "C1"})
-    assert result == [{"CustomerNum": "C1", "UserID": "u1"}]
+    assert result == [{"CustomerNum": "C1", "UserID": "u1", "AccessDate": "01-05-2024"}]
 
 
 @pytest.mark.anyio
@@ -34,8 +36,8 @@ async def test_upsert_hcm_users_splits_payload(monkeypatch):
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
 
     payload = [
-        {"PK_Number": 1, "CustomerNum": "1", "UserID": "u1"},
-        {"CustomerNum": "2", "UserID": "u2"},
+        {"PK_Number": 1, "CustomerNum": "1", "UserID": "u1", "AccessDate": "01-05-2024"},
+        {"CustomerNum": "2", "UserID": "u2", "AccessDate": "02-05-2024"},
     ]
 
     result = await svc.upsert_hcm_users(payload)
@@ -44,3 +46,5 @@ async def test_upsert_hcm_users_splits_payload(monkeypatch):
     # Remapped records should convert CustomerNum -> CustNum
     assert calls["merge"][0]["CustNum"] == "1"
     assert calls["insert"][0]["CustNum"] == "2"
+    assert calls["merge"][0]["AccessDate"] == date(2024, 5, 1)
+    assert calls["insert"][0]["AccessDate"] == date(2024, 5, 2)

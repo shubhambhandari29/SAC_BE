@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
+from core.date_utils import format_records_dates, normalize_payload_list
 from core.db_helpers import (
     fetch_records_async,
     insert_records_async,
@@ -19,7 +20,8 @@ PRIMARY_KEY = "PK_Number"
 async def get_affiliates(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params)
-        return await fetch_records_async(table=TABLE_NAME, filters=filters)
+        records = await fetch_records_async(table=TABLE_NAME, filters=filters)
+        return format_records_dates(records)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -29,10 +31,11 @@ async def get_affiliates(query_params: dict[str, Any]):
 
 async def upsert_affiliates(data_list: list[dict[str, Any]]):
     try:
+        normalized_records = normalize_payload_list(data_list)
         to_update: list[dict[str, Any]] = []
         to_insert: list[dict[str, Any]] = []
 
-        for record in data_list:
+        for record in normalized_records:
             pk_value = record.get(PRIMARY_KEY)
             if pk_value in (None, ""):
                 sanitized_record = {k: v for k, v in record.items() if k != PRIMARY_KEY}

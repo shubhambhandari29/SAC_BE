@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from services.sac import loss_run_distribution_service as svc
@@ -10,13 +12,13 @@ async def test_get_distribution(monkeypatch):
 
     async def fake_fetch(**kwargs):
         assert kwargs["filters"] == {"CustomerNum": "1"}
-        return [{"CustomerNum": "1"}]
+        return [{"CustomerNum": "1", "ReportDate": "2024-04-01T00:00:00"}]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     result = await svc.get_distribution({"CustomerNum": "1"})
-    assert result == [{"CustomerNum": "1"}]
+    assert result == [{"CustomerNum": "1", "ReportDate": "01-04-2024"}]
 
 
 @pytest.mark.anyio
@@ -28,8 +30,11 @@ async def test_upsert_distribution(monkeypatch):
         return {"count": 1}
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
-    result = await svc.upsert_distribution([{"CustomerNum": "1", "EMailAddress": "a"}])
+    result = await svc.upsert_distribution(
+        [{"CustomerNum": "1", "EMailAddress": "a", "ReportDate": "01-04-2024"}]
+    )
     assert captured["data"][0]["CustomerNum"] == "1"
+    assert captured["data"][0]["ReportDate"] == date(2024, 4, 1)
 
 
 @pytest.mark.anyio

@@ -5,6 +5,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
+from core.date_utils import format_records_dates, normalize_payload_list
 from core.db_helpers import (
     fetch_records_async,
     merge_upsert_records_async,
@@ -45,7 +46,8 @@ async def get_frequency(query_params: dict[str, Any]) -> list[dict[str, Any]]:
             filters=filters,
             order_by=ORDER_BY_COLUMN,
         )
-        return _restore_customer_num(records)
+        restored = _restore_customer_num(records)
+        return format_records_dates(restored)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -60,7 +62,7 @@ async def upsert_frequency(data_list: list[dict[str, Any]]) -> dict[str, Any]:
     Matching key: CustomerNum + MthNum.
     """
     try:
-        payload = [_remap_keys(item) for item in data_list]
+        payload = normalize_payload_list([_remap_keys(item) for item in data_list])
         result = await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=payload,
