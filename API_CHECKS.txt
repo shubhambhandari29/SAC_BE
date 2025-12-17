@@ -824,3 +824,76 @@ Managed Identity + Azure AD auth for SQL
 Enable system-assigned managed identity on the App Service.
 In Azure SQL, run CREATE USER [app_name] FROM EXTERNAL PROVIDER; ALTER ROLE db_datareader ADD MEMBER [app_name]; etc.
 In code, use azure-identity to obtain an access token for https://database.windows.net/. With pyodbc you pass attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token} when connecting. This way the connection is authenticated with the App Service identity, independent of the user.
+
+
+
+
+
+
+https://learn.microsoft.com/en-us/azure/key-vault/general/assign-access-policy?tabs=azure-portal
+
+https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal?view=azuresql
+
+https://learn.microsoft.com/en-us/azure/app-service/overview-managed-identity?tabs=portal%2Chttp
+
+
+
+
+Explain why the current approach fails – We currently use ActiveDirectoryIntegrated, which authenticates SQL connections with the Windows user running the app. That only works on a developer’s domain-joined machine; in Azure App Service there is no Windows user, so the API cannot connect to SQL. It also forces every end user to have DB rights, which isn’t acceptable.
+
+Describe the Azure-native solution – Enable the system-assigned managed identity on the FastAPI App Service. That identity (not end users) will authenticate to Azure SQL via Azure AD tokens. Secrets such as server name, DB name, or any additional credentials live in Key Vault, which the same managed identity can access. This is Microsoft’s recommended pattern when all components are in Azure.
+
+What you need from them
+
+Database permissions: in the target Azure SQL database, run
+CREATE USER [<app-service-managed-identity-name>] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [<identity>];
+ALTER ROLE db_datawriter ADD MEMBER [<identity>];
+(and any other stored-proc or role grants). This must be run by the DB admin; it’s done once per environment.
+Key Vault access: grant the same managed identity “Get/List” permissions on the Key Vault that stores SQL connection pieces or other secrets. Provide the secret names if the vault is managed by their team.
+App Service settings: allow us (or them) to enable the managed identity on the FastAPI App Service and set the needed configuration values (USE_KEY_VAULT=true, KEY_VAULT_URL=…, DB_SERVER_SECRET_NAME=…, USE_AZURE_AD_TOKEN_AUTH=true, etc.).
+Firewall/network: ensure the App Service can reach the SQL server (whitelist its outbound IP or subnet if a private endpoint/VNet is in use).
+Benefits to highlight – No secrets stored in code; the API can connect regardless of which user is logged into the UI; consistent configuration across environments; aligns with Azure best practices for security and maintenance.
+
+
+
+Enable the managed identity (if not already)
+
+Azure Portal → App Service (FastAPI backend) → Identity → System assigned → On → Save.
+Note the identity name (usually the App Service name); you’ll need it for the SQL commands.
+DB admin runs T-SQL in Azure SQL
+
+Connect to the target database using SSMS/Azure Data Studio with an admin account.
+Run:
+CREATE USER [<AppServiceIdentityName>] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [<AppServiceIdentityName>];
+ALTER ROLE db_datawriter ADD MEMBER [<AppServiceIdentityName>];
+-- add db_owner or exec grants if required
+Replace <AppServiceIdentityName> with the managed identity’s name (case-sensitive). Repeat per environment.
+Network/firewall
+
+Ensure the App Service is allowed through SQL firewall (either “Allow Azure services” or specific outbound IP/VNet).
+Granting Key Vault access
+
+Identify Key Vault
+
+Provide the vault name/URI (https://<vault>.vault.azure.net) and the secret names you need (server, DB name, etc.).
+Key Vault access policy/RBAC
+
+In the Azure Portal → Key Vault → Access policies (if using policy model):
+Add access policy
+Select permissions: Secrets → Get + List
+Principal: choose the App Service managed identity
+Save
+If the vault uses Azure RBAC:
+Key Vault → Access control (IAM) → Add role assignment
+Assign “Key Vault Secrets User” to the App Service managed identity.
+Share secret names
+
+Confirm the exact secret names (e.g., sac-prod-db-server, sac-prod-db-name, sac-sql-client-id, etc.) so the app configuration can reference them.
+What to tell the client
+
+“Please enable the system-assigned managed identity on our FastAPI App Service if it isn’t already, then in the Azure SQL database run the CREATE USER FROM EXTERNAL PROVIDER + ALTER ROLE ... ADD MEMBER commands using that identity name. This lets the app authenticate to SQL.”
+“Grant that same managed identity Get/List permissions on the Key Vault (via Access Policies or RBAC). We’ll read secrets like server name and DB name from there.”
+“Ensure the SQL firewall allows the App Service to connect.”
+If they’re unsure how to perform these steps, offer to walk through in a screen share or share Microsoft docs:
