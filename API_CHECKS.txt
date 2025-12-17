@@ -812,3 +812,15 @@ admin
     }
 ]
  
+
+
+
+ActiveDirectoryIntegrated (aka “Integrated Security”, “Windows auth”) uses the identity of the Windows account running the application to authenticate to SQL Server. That only works when the process can present a Kerberos ticket—typically a service account on the same domain. In your current setup, when you run locally it’s using your domain identity; that’s why it feels tied to whoever is logged in. In production, though, FastAPI runs on App Service (Linux) and isn’t joined to your corporate domain, so ActiveDirectoryIntegrated won’t work there. We need an identity that belongs to the app itself, not to each end user.
+
+The usual approaches in Azure are:
+
+Managed Identity + Azure AD auth for SQL
+
+Enable system-assigned managed identity on the App Service.
+In Azure SQL, run CREATE USER [app_name] FROM EXTERNAL PROVIDER; ALTER ROLE db_datareader ADD MEMBER [app_name]; etc.
+In code, use azure-identity to obtain an access token for https://database.windows.net/. With pyodbc you pass attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token} when connecting. This way the connection is authenticated with the App Service identity, independent of the user.
