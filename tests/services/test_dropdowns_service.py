@@ -64,3 +64,14 @@ async def test_get_dropdown_values_missing_type():
         await svc.get_dropdown_values("  ")
 
     assert exc.value.status_code == 400
+
+
+@pytest.mark.anyio
+async def test_get_dropdown_values_all(monkeypatch):
+    async def fake_all():
+        return [{"DD_Type": "AccomType"}]
+
+    monkeypatch.setattr(svc, "get_all_dropdowns", fake_all)
+
+    result = await svc.get_dropdown_values("All")
+    assert result == [{"DD_Type": "AccomType"}]

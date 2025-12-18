@@ -9,6 +9,7 @@ def test_build_connection_string(monkeypatch):
         DB_SERVER = "server"
         DB_NAME = "database"
         DB_AUTH = "ActiveDirectoryInteractive"
+        USE_KEY_VAULT = False
 
     monkeypatch.setattr(db, "settings", DummySettings)
     conn_str = db._build_connection_string()
