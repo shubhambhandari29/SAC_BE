@@ -813,37 +813,136 @@ admin
 ]
 
 
-async def upsert_sac_policies(data):
-    """
-    Update row if already exists, else insert row into tblPolicies
-    """
- 
-    try:
-        cursor = conn.cursor()
-        if 'PK_Number' not in data:
-                data['PK_Number'] = None
-        non_identity_cols = [col for col in data.keys() if col != 'PK_Number']
- 
-        # Assuming `PK_Number` is the primary key / unique identifier
-        merge_query = f"""
-        MERGE INTO tblPolicies AS target
-        USING (SELECT {", ".join(['? AS ' + col for col in data.keys()])}) AS source
-        ON target.PK_Number = source.PK_Number
-        WHEN MATCHED THEN
-            UPDATE SET {", ".join([f"{col} = source.{col}" for col in non_identity_cols if col != 'PK_Number'])}
-        WHEN NOT MATCHED THEN
-            INSERT ({", ".join(non_identity_cols)})
-            VALUES ({", ".join(['source.' + col for col in non_identity_cols])})
-        OUTPUT INSERTED.PK_Number;
-        """
- 
-        values = list(data.values())
-        cursor.execute(merge_query, values)
-        upserted_id = cursor.fetchall()
-        conn.commit()
- 
-        return {"message": "Transaction successful", "PK_Number": upserted_id[0][0]}
-    except Exception as e:
-        conn.rollback()
-        logger.warning(f"Insert/Update failed - {str(e)}")
-        raise HTTPException(status_code=500, detail={"error": str(e)})
+export const sacAccountFieldPermissions = {
+  Underwriter: [
+    "AcctStatus",
+    "CustomerName",
+    "CustomerNum",
+    "OnBoardDate",
+    "BranchName",
+    "MarketSegmentation",
+    "AccountNotes",
+    "InsuredWebsite",
+    "NCMType",
+    "NCMStatus",
+    "NCMStartDt",
+  ],
+  Director: [
+    //All fields accessable to UW
+    "AcctStatus",
+    "CustomerName",
+    "CustomerNum",
+    "OnBoardDate",
+    "BranchName",
+    "MarketSegmentation",
+    "AccountNotes",
+    "InsuredWebsite",
+    "NCMType",
+    "NCMStatus",
+    "NCMStartDt",
+
+    // New fields
+    "RelatedEnt",
+    "SAC_Contact1",
+    "LossCtlRep1",
+    "SAC_Contact2",
+    "LossCtlRep2",
+    "AcctOwner",
+    "RiskSolMgr",
+    "OBMethod",
+    "HCMAccess",
+    "BusinessType",
+    "LossRunDistFreq",
+    "DeductDistFreq",
+    "ClaimRevDistFreq",
+    "CRThresh",
+
+    //Buttons
+    "LossRunReportRecipient",
+    "DecuctCheckAll",
+    "DecuctUnCheckAll",
+    "DeductReportRecipient",
+    "ClaimRevCheckAll",
+    "ClaimRevUnCheckAll",
+    "ClaimRevReportRecipient",
+  ],
+  Admin: "ALL",
+};
+
+export const policyFieldPermissions = {
+  Underwriter: [
+    "PolPref",
+    "PolicyNum",
+    "PolMod",
+    "AccountName",
+    "CustomerNum",
+    "AcctOnPolicyName",
+    "PolicyStatus",
+    "LocCoded",
+    "InceptDate",
+    "ExpDate",
+    "UnderwriterName",
+    "UWMgr",
+    "PremiumAmt",
+    "AgentName",
+    "AgentCode",
+  ],
+  Director: [
+    //All fields accessable to UW
+    "PolPref",
+    "PolicyNum",
+    "PolMod",
+    "AccountName",
+    "CustomerNum",
+    "AcctOnPolicyName",
+    "PolicyStatus",
+    "LocCoded",
+    "InceptDate",
+    "ExpDate",
+    "UnderwriterName",
+    "UWMgr",
+    "PremiumAmt",
+    "AgentName",
+    "AgentCode",
+
+    // New fields
+    "AgentContact1",
+    "AgentTel1",
+    "AgentCell1",
+    "AgentEmail1",
+    "AgentContact2",
+    "AgentTel2",
+    "AgentCell2",
+    "AgentEmail2",
+    "InsuredContact1",
+    "InsuredTitle1",
+    "InsuredPhone1",
+    "InsuredCell1",
+    "InsuredEmail1",
+    "InsuredContact2",
+    "InsuredTitle2",
+    "InsuredPhone2",
+    "InsuredCell2",
+    "InsuredEmail2",
+    "InsuredNotes",
+    "ContactInstruct",
+    "CoverageInstruct",
+    "ReserveInstruct",
+    "PrefCounselYN",
+    "LitigationInstruct",
+    "SettlementInstruct",
+    "RecoveryInstruct",
+    "MiscCovInstruct",
+
+    //Buttons
+    "SendToRecipient",
+    "SendToRecipient2",
+    "DecuctCheckAll",
+    "DecuctUnCheckAll",
+    "DeductReportRecipient",
+    "ClaimRevCheckAll",
+    "ClaimRevUnCheckAll",
+    "ClaimRevReportRecipient",
+  ],
+  Admin: "ALL",
+};
