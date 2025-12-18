@@ -224,6 +224,26 @@ async def test_upsert_sac_account_enforces_inactive_dependencies(monkeypatch):
 
 
 @pytest.mark.anyio
+async def test_upsert_sac_account_inactive_dependencies_skipped_for_underwriter(monkeypatch):
+    async def fake_merge(**kwargs):
+        return {"message": "ok"}
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = {
+        "CustomerNum": "1",
+        "CustomerName": "Acme",
+        "Stage": "Underwriter",
+        "OnBoardDate": "2024-01-05",
+        "BranchName": "Midwest",
+        "AcctStatus": "Inactive",
+    }
+
+    result = await svc.upsert_sac_account(payload)
+    assert result == {"message": "ok"}
+
+
+@pytest.mark.anyio
 async def test_upsert_sac_account_service_level_conflict(monkeypatch):
     async def fake_merge(**kwargs):
         raise AssertionError("merge should not be called")
@@ -245,6 +265,27 @@ async def test_upsert_sac_account_service_level_conflict(monkeypatch):
 
     assert exc.value.status_code == 422
     assert exc.value.detail["errors"][0]["code"] == "SERVICE_LEVEL_CONFLICT"
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_account_service_level_not_checked_for_underwriter(monkeypatch):
+    async def fake_merge(**kwargs):
+        return {"message": "ok"}
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = {
+        "CustomerNum": "1",
+        "CustomerName": "Acme",
+        "Stage": "Underwriter",
+        "OnBoardDate": "2024-01-05",
+        "BranchName": "Midwest",
+        "TotalPrem": 100000,
+        "ServLevel": "Comprehensive",
+    }
+
+    result = await svc.upsert_sac_account(payload)
+    assert result == {"message": "ok"}
 
 
 @pytest.mark.anyio

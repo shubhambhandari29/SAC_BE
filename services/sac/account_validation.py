@@ -5,18 +5,49 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-ROLE_PRIORITY = {"Underwriter": 0, "Director": 1, "Admin": 2}
+DEFAULT_ROLE = "Underwriter"
 
-# Minimum role required to edit a specific field. Fields missing here are treated
-# as available to every role.
-FIELD_MIN_ROLE: dict[str, str] = {
-    "CustomerNum": "Underwriter",
-    "CustomerName": "Underwriter",
-    "OnBoardDate": "Underwriter",
-    "BranchName": "Underwriter",
-    "DateNotif": "Admin",
-    "TermDate": "Admin",
-    "TermCode": "Admin",
+UNDERWRITER_FIELDS = {
+    "AcctStatus",
+    "CustomerName",
+    "CustomerNum",
+    "OnBoardDate",
+    "BranchName",
+    "MarketSegmentation",
+    "AccountNotes",
+    "InsuredWebsite",
+    "NCMType",
+    "NCMStatus",
+    "NCMStartDt",
+}
+
+DIRECTOR_ADDITIONAL_FIELDS = {
+    "RelatedEnt",
+    "SAC_Contact1",
+    "LossCtlRep1",
+    "SAC_Contact2",
+    "LossCtlRep2",
+    "AcctOwner",
+    "RiskSolMgr",
+    "OBMethod",
+    "HCMAccess",
+    "BusinessType",
+    "LossRunDistFreq",
+    "DeductDistFreq",
+    "ClaimRevDistFreq",
+    "CRThresh",
+    "LossRunReportRecipient",
+    "DecuctCheckAll",
+    "DecuctUnCheckAll",
+    "DeductReportRecipient",
+    "ClaimRevCheckAll",
+    "ClaimRevUnCheckAll",
+    "ClaimRevReportRecipient",
+}
+
+ROLE_FIELD_PERMISSIONS = {
+    "Underwriter": UNDERWRITER_FIELDS,
+    "Director": UNDERWRITER_FIELDS | DIRECTOR_ADDITIONAL_FIELDS,
 }
 
 REQUIRED_FIELDS: tuple[tuple[str, str], ...] = (
@@ -40,15 +71,24 @@ ZERO_REQUIRED_LEVELS = {
 }
 
 
-def _role_value(role: str | None) -> int:
-    return ROLE_PRIORITY.get(role or "Underwriter", 0)
+def _normalize_role(role: str | None) -> str:
+    if not role:
+        return DEFAULT_ROLE
+    lowered = role.strip().lower()
+    if lowered == "admin":
+        return "Admin"
+    if lowered == "director":
+        return "Director"
+    return DEFAULT_ROLE
 
 
-def _is_enabled(field: str, role: str | None) -> bool:
-    min_role = FIELD_MIN_ROLE.get(field)
-    if not min_role:
+def _is_enabled(field: str, role: str) -> bool:
+    if role == "Admin":
         return True
-    return _role_value(role) >= _role_value(min_role)
+    allowed = ROLE_FIELD_PERMISSIONS.get(role)
+    if not allowed:
+        return True
+    return field in allowed
 
 
 def _has_value(value: Any) -> bool:
@@ -113,7 +153,7 @@ def validate_account_payload(payload: dict[str, Any], role: str | None) -> list[
     Validate the SAC account payload and return a list of error dicts.
     """
 
-    normalized_role = role or "Underwriter"
+    normalized_role = _normalize_role(role)
     errors: list[dict[str, str]] = []
 
     for field, message in REQUIRED_FIELDS:
@@ -126,7 +166,12 @@ def validate_account_payload(payload: dict[str, Any], role: str | None) -> list[
                 errors.append(_error(field, "REQUIRED", message))
 
     override = payload.get("ServiceLevelOverride") in (True, "true", "True", "1", 1)
-    if not override and _service_level_conflict(payload):
+    if (
+        _is_enabled("ServLevel", normalized_role)
+        and _is_enabled("TotalPrem", normalized_role)
+        and not override
+        and _service_level_conflict(payload)
+    ):
         errors.append(
             _error(
                 "ServLevel",
