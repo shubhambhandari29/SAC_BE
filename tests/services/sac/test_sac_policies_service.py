@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any
 
 import pytest
 from fastapi import HTTPException
@@ -24,15 +25,51 @@ async def test_get_sac_policies(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_upsert_sac_policies(monkeypatch):
+async def test_upsert_sac_policies_updates_when_pk_present(monkeypatch):
+    calls: dict[str, Any] = {}
+
     async def fake_merge(**kwargs):
-        assert kwargs["data_list"][0]["CustomerNum"] == "1"
-        assert kwargs["data_list"][0]["EffectiveDate"] == date(2024, 1, 1)
-        return {"message": "ok"}
+        calls["merge"] = kwargs
+
+    async def fake_insert(**kwargs):
+        calls["insert"] = kwargs
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
-    result = await svc.upsert_sac_policies({"CustomerNum": "1", "EffectiveDate": "01-01-2024"})
-    assert result == {"message": "ok"}
+    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+
+    payload = {"PK_Number": 1, "CustomerNum": "1", "EffectiveDate": "01-01-2024"}
+    result = await svc.upsert_sac_policies(payload)
+
+    assert result == {"message": "Transaction successful", "count": 1}
+    assert "merge" in calls and "insert" not in calls
+    merged_payload = calls["merge"]["data_list"][0]
+    assert merged_payload["PK_Number"] == 1
+    assert merged_payload["EffectiveDate"] == date(2024, 1, 1)
+    assert calls["merge"]["key_columns"] == [svc.PRIMARY_KEY]
+    assert calls["merge"]["exclude_key_columns_from_insert"] is True
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
+    calls: dict[str, Any] = {"merge_called": False}
+
+    async def fake_merge(**kwargs):
+        calls["merge_called"] = True
+
+    async def fake_insert(**kwargs):
+        calls["insert"] = kwargs
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+
+    payload = {"CustomerNum": "1", "PolicyNum": "P1", "PolMod": "00", "EffectiveDate": "01-01-2024"}
+    result = await svc.upsert_sac_policies(payload)
+
+    assert result == {"message": "Transaction successful", "count": 1}
+    assert calls["merge_called"] is False
+    inserted_payload = calls["insert"]["records"][0]
+    assert "PK_Number" not in inserted_payload
+    assert inserted_payload["EffectiveDate"] == date(2024, 1, 1)
 
 
 @pytest.mark.anyio

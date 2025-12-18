@@ -7,9 +7,10 @@ from pydantic import BaseModel, Field
 class SacPolicyUpsert(BaseModel):
     """
     Payload for inserting or updating a SAC policy record.
-    CustomerNum + PolicyNum + PolMod uniquely identify a row.
+    PK_Number (identity column) is preferred when updating an existing row.
     """
 
+    PK_Number: int | None = None
     CustomerNum: str = Field(..., min_length=1)
     PolicyNum: str = Field(..., min_length=1)
     PolMod: str = Field(..., min_length=1)
