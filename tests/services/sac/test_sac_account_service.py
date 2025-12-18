@@ -267,3 +267,23 @@ async def test_upsert_sac_account_service_level_override(monkeypatch):
 
     result = await svc.upsert_sac_account(payload)
     assert result == {"message": "ok"}
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_account_requires_customer_number(monkeypatch):
+    async def fake_merge(**kwargs):
+        raise AssertionError("merge should not be called")
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = {
+        "CustomerName": "Acme",
+        "OnBoardDate": "2024-01-05",
+        "BranchName": "Midwest",
+    }
+
+    with pytest.raises(HTTPException) as exc:
+        await svc.upsert_sac_account(payload)
+
+    assert exc.value.status_code == 422
+    assert exc.value.detail["errors"][0]["field"] == "CustomerNum"

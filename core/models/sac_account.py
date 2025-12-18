@@ -6,10 +6,10 @@ from pydantic import BaseModel, Field
 class SacAccountUpsert(BaseModel):
     """
     Payload for creating or updating an SAC account row.
-    Only CustomerNum is mandatory; other fields are optional updates.
+    Fields are optional so that business-rule validations handle errors uniformly.
     """
 
-    CustomerNum: str = Field(..., min_length=1)
+    CustomerNum: str | None = Field(None, min_length=1)
     CustomerName: str | None = None
     OnBoardDate: str | None = None
     ServLevel: str | None = None
