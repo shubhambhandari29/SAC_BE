@@ -49,11 +49,20 @@ async def test_get_dropdown_values_missing_type():
 
 
 @pytest.mark.anyio
-async def test_get_dropdown_values_unknown():
-    with pytest.raises(HTTPException) as exc:
-        await svc.get_dropdown_values("UnknownType")
+async def test_get_dropdown_values_dynamic(monkeypatch):
+    captured = {}
 
-    assert exc.value.status_code == 404
+    async def fake_run(query, params):
+        captured["query"] = query
+        captured["params"] = params
+        return [{"DD_Value": "Value1"}]
+
+    monkeypatch.setattr(svc, "run_raw_query_async", fake_run)
+
+    result = await svc.get_dropdown_values("AccomType")
+    assert result == [{"DD_Value": "Value1"}]
+    assert "FROM tbl_DropDowns" in captured["query"]
+    assert captured["params"] == ["AccomType"]
 
 
 @pytest.mark.anyio
