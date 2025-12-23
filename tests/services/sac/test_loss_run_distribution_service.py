@@ -23,18 +23,32 @@ async def test_get_distribution(monkeypatch):
 
 @pytest.mark.anyio
 async def test_upsert_distribution(monkeypatch):
-    captured = {}
+    captured: dict[str, list[dict[str, Any]] | None] = {"merge": None, "insert": None}
 
     async def fake_merge(**kwargs):
-        captured["data"] = kwargs["data_list"]
-        return {"count": 1}
+        captured["merge"] = kwargs["data_list"]
+        return {"count": len(kwargs["data_list"])}
+
+    async def fake_insert(**kwargs):
+        captured["insert"] = kwargs["records"]
+        return {"count": len(kwargs["records"])}
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
-    result = await svc.upsert_distribution(
-        [{"CustomerNum": "1", "EMailAddress": "a", "ReportDate": "01-04-2024"}]
-    )
-    assert captured["data"][0]["CustomerNum"] == "1"
-    assert captured["data"][0]["ReportDate"] == date(2024, 4, 1)
+    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+
+    payload = [
+        {"PK_Number": 1, "CustomerNum": "1", "EMailAddress": "a", "ReportDate": "01-04-2024"},
+        {"CustomerNum": "2", "EMailAddress": "b", "ReportDate": "02-04-2024"},
+    ]
+
+    result = await svc.upsert_distribution(payload)
+
+    assert captured["merge"] is not None
+    assert captured["insert"] is not None
+    assert captured["merge"][0]["ReportDate"] == date(2024, 4, 1)
+    assert captured["insert"][0]["ReportDate"] == date(2024, 4, 2)
+    assert "PK_Number" not in captured["insert"][0]
+    assert result == {"message": "Transaction successful", "count": 2}
 
 
 @pytest.mark.anyio
