@@ -23,6 +23,18 @@ def _require_env(var_name: str, *, optional: bool = False) -> Optional[str]:
     return value
 
 
+def _allowed_origins() -> list[str]:
+    raw = os.getenv("FRONTEND_URLS")
+    if raw:
+        return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+    fallback = os.getenv("FRONTEND_URL")
+    if fallback:
+        return [fallback]
+
+    return ["http://localhost:3000"]
+
+
 class Settings:
 
     # Feature flags / environment toggles
@@ -54,7 +66,7 @@ class Settings:
     ACCESS_TOKEN_VALIDITY: int = int(os.getenv("ACCESS_TOKEN_VALIDITY", 480))  # minutes
 
     # CORS settings
-    ALLOWED_ORIGINS = [os.getenv("FRONTEND_URL", "http://localhost:3000")]
+    ALLOWED_ORIGINS = _allowed_origins()
 
 
 settings = Settings()
