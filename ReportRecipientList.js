@@ -59,47 +59,10 @@ export default function ReportRecipientList({ url, parameter }) {
   }, [reset, url, parameter]);
 
   const onSubmit = (data) => {
-    let dataValidationError;
-    data.recipients.forEach((r) => {
-      dataValidationError =
-        !r[Object.keys(parameter)[0]] ||
-        !r.RecipCat ||
-        !r.DistVia ||
-        !r.AttnTo ||
-        !r.EMailAddress;
-    });
+    // Let the backend perform validation; just send the raw grid.
+    let filteredList = data.recipients;
 
-    //data validation alert when mandatory fields are missing
-    if (dataValidationError) {
-      Swal.fire({
-        title: "Data Validation Error",
-        text: `You've left blank a mandatory field. Please check your entries.`,
-        icon: "error",
-        confirmButtonText: "OK",
-        iconColor: theme.palette.error.main,
-        customClass: {
-          confirmButton: "swal-confirm-button",
-          cancelButton: "swal-cancel-button",
-        },
-        buttonsStyling: false,
-      });
-      return;
-    }
-
-    // Remove empty new rows
-    let filteredList = data.recipients.filter(
-      (r) =>
-        r[Object.keys(parameter)[0]].trim() ||
-        r.RecipCat.trim() ||
-        r.DistVia.trim() ||
-        r.AttnTo.trim() ||
-        r.EMailAddress.trim()
-    );
-
-    if (deleted.length)
-      filteredList = filteredList.filter((a1) =>
-        deleted.some((a2) => a2.EMailAddress !== a1.EMailAddress)
-      );
+    if (deleted.length) api.post(`${url}delete`, deleted);
 
     // Check if data is same as original
     const isSame =
@@ -113,7 +76,6 @@ export default function ReportRecipientList({ url, parameter }) {
 
     try {
       setLoading("submitting");
-      if (deleted.length) api.post(`${url}delete`, deleted);
       api.post(`${url}upsert`, filteredList);
     } catch (err) {
       console.log(err);

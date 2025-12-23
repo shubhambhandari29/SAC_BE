@@ -10,6 +10,7 @@ from core.db_helpers import (
     merge_upsert_records_async,
     sanitize_filters,
 )
+from services.sac.recipient_validations import clean_and_validate_recipient_rows
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +31,12 @@ async def get_distribution(query_params: dict[str, Any]):
 
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
+    cleaned, errors = clean_and_validate_recipient_rows(data_list)
+    if errors:
+        raise HTTPException(status_code=422, detail={"errors": errors})
+
     try:
-        normalized = normalize_payload_list(data_list)
+        normalized = normalize_payload_list(cleaned)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=normalized,

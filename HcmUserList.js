@@ -57,57 +57,6 @@ export default function HCMUserList({ customerNum }) {
   }, [customerNum, reset]);
 
   const onSubmit = (data) => {
-    let dataValidationError, TelNumValidationError;
-    data.users.forEach((u) => {
-      dataValidationError =
-        !u.UserName || !u.UserTitle || !u.UserEmail || !u.LanID;
-    });
-
-    for (const u of data.users) {
-      dataValidationError =
-        !u.UserName ||
-        !u.UserTitle ||
-        !u.UserEmail ||
-        !u.UserAction ||
-        !u.LanID;
-      TelNumValidationError = u.TelNum && u.TelNum.length !== 14;
-      if (dataValidationError || TelNumValidationError) break;
-    }
-
-    //data validation alert when mandatory fields are missing
-    if (dataValidationError) {
-      Swal.fire({
-        title: "Data Validation Error",
-        text: `You've left blank a mandatory field. Please check your entries.`,
-        icon: "error",
-        confirmButtonText: "OK",
-        iconColor: theme.palette.error.main,
-        customClass: {
-          confirmButton: "swal-confirm-button",
-          cancelButton: "swal-cancel-button",
-        },
-        buttonsStyling: false,
-      });
-      return;
-    }
-
-    //When length of phone no is less than 10
-    if (TelNumValidationError) {
-      Swal.fire({
-        title: "Data Validation Error",
-        text: `Telephone number should be of 10 digts`,
-        icon: "error",
-        confirmButtonText: "OK",
-        iconColor: theme.palette.error.main,
-        customClass: {
-          confirmButton: "swal-confirm-button",
-          cancelButton: "swal-cancel-button",
-        },
-        buttonsStyling: false,
-      });
-      return;
-    }
-
     const isSame = JSON.stringify(data.users) === JSON.stringify(originalData);
 
     if (isSame) {
@@ -118,7 +67,6 @@ export default function HCMUserList({ customerNum }) {
 
     try {
       setLoading("submitting");
-      // if (deleted.length) api.post(`${url}delete`, deleted);
       api.post(`/hcm_users/upsert`, data.users);
     } catch (err) {
       console.log(err);

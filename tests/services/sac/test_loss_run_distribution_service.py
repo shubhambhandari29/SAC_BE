@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+from fastapi import HTTPException
 
 from services.sac import loss_run_distribution_service as svc
 
@@ -37,8 +38,23 @@ async def test_upsert_distribution(monkeypatch):
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
 
     payload = [
-        {"PK_Number": 1, "CustomerNum": "1", "EMailAddress": "a", "ReportDate": "01-04-2024"},
-        {"CustomerNum": "2", "EMailAddress": "b", "ReportDate": "02-04-2024"},
+        {
+            "PK_Number": 1,
+            "CustomerNum": "1",
+            "RecipCat": "Loss Control",
+            "DistVia": "Email",
+            "AttnTo": "Name1",
+            "EMailAddress": "a@example.com",
+            "ReportDate": "01-04-2024",
+        },
+        {
+            "CustomerNum": "2",
+            "RecipCat": "Loss Control",
+            "DistVia": "Email",
+            "AttnTo": "Name2",
+            "EMailAddress": "b@example.com",
+            "ReportDate": "02-04-2024",
+        },
     ]
 
     result = await svc.upsert_distribution(payload)
@@ -62,3 +78,26 @@ async def test_delete_distribution(monkeypatch):
     monkeypatch.setattr(svc, "delete_records_async", fake_delete)
     await svc.delete_distribution([{"CustomerNum": "1", "EMailAddress": "a"}])
     assert captured["data"][0]["CustomerNum"] == "1"
+
+
+@pytest.mark.anyio
+async def test_upsert_distribution_validates_required_fields(monkeypatch):
+    async def fake_merge(**kwargs):
+        raise AssertionError("should not merge")
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = [
+        {
+            "CustomerNum": "1",
+            "RecipCat": "",
+            "DistVia": "Email",
+            "AttnTo": "Name",
+            "EMailAddress": "test@example.com",
+        }
+    ]
+
+    with pytest.raises(HTTPException) as exc:
+        await svc.upsert_distribution(payload)
+
+    assert exc.value.status_code == 422
