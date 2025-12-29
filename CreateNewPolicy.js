@@ -206,33 +206,6 @@ export default function CreateNewPolicy() {
       Object.entries(data).filter(([_, v]) => v !== null && v !== "")
     );
 
-    const dataValidationFailedFor = !filteredData.AccountName
-      ? "Customer Account Name"
-      : !filteredData.LocCoded
-      ? "Location Coded"
-      : !filteredData.PolicyNum
-      ? "Policy Number"
-      : !filteredData.PolMod
-      ? "Policy Mod"
-      : "";
-
-    //data validation alert when mandatory fields are missing
-    if (dataValidationFailedFor) {
-      Swal.fire({
-        title: "Data Validation Error",
-        text: `${dataValidationFailedFor} is mandatory and cannot be empty!`,
-        icon: "error",
-        confirmButtonText: "OK",
-        iconColor: theme.palette.error.main,
-        customClass: {
-          confirmButton: "swal-confirm-button",
-          cancelButton: "swal-cancel-button",
-        },
-        buttonsStyling: false,
-      });
-      return;
-    }
-
     //confirmation alert on submission
     const confirmRes = await Swal.fire({
       title: "Confirm Submit",

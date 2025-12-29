@@ -37,7 +37,15 @@ async def test_upsert_sac_policies_updates_when_pk_present(monkeypatch):
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
 
-    payload = {"PK_Number": 1, "CustomerNum": "1", "EffectiveDate": "01-01-2024"}
+    payload = {
+        "PK_Number": 1,
+        "CustomerNum": "1",
+        "AccountName": "Acme",
+        "LocCoded": "Y",
+        "PolicyNum": "P1",
+        "PolMod": "00",
+        "EffectiveDate": "01-01-2024",
+    }
     result = await svc.upsert_sac_policies(payload)
 
     assert result == {"message": "Transaction successful", "count": 1}
@@ -62,7 +70,14 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
 
-    payload = {"CustomerNum": "1", "PolicyNum": "P1", "PolMod": "00", "EffectiveDate": "01-01-2024"}
+    payload = {
+        "CustomerNum": "1",
+        "AccountName": "Acme",
+        "LocCoded": "Y",
+        "PolicyNum": "P1",
+        "PolMod": "00",
+        "EffectiveDate": "01-01-2024",
+    }
     result = await svc.upsert_sac_policies(payload)
 
     assert result == {"message": "Transaction successful", "count": 1}
@@ -70,6 +85,22 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
     inserted_payload = calls["insert"]["records"][0]
     assert "PK_Number" not in inserted_payload
     assert inserted_payload["EffectiveDate"] == date(2024, 1, 1)
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_policies_validates_required_fields(monkeypatch):
+    async def fake_merge(**kwargs):
+        raise AssertionError("should not merge")
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+
+    payload = {"CustomerNum": "1"}
+
+    with pytest.raises(HTTPException) as exc:
+        await svc.upsert_sac_policies(payload)
+
+    assert exc.value.status_code == 422
+    assert exc.value.detail["errors"][0]["field"] == "AccountName"
 
 
 @pytest.mark.anyio
