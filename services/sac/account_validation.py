@@ -12,7 +12,10 @@ UNDERWRITER_FIELDS = {
     "CustomerName",
     "CustomerNum",
     "OnBoardDate",
-    "BranchName",
+    "BranchName", 
+    "DateNotif",
+    "TermDate",
+    "TermCode",
     "MarketSegmentation",
     "AccountNotes",
     "InsuredWebsite",
@@ -51,16 +54,16 @@ ROLE_FIELD_PERMISSIONS = {
 }
 
 REQUIRED_FIELDS: tuple[tuple[str, str], ...] = (
-    ("CustomerNum", "Customer Number is mandatory."),
-    ("CustomerName", "Account Name is mandatory."),
-    ("OnBoardDate", "On Board Date is mandatory."),
-    ("BranchName", "Branch Name is mandatory."),
+    ("CustomerNum", "Customer Number is mandatory and cannot be empty."),
+    ("CustomerName", "Account Name is mandatory and cannot be empty."),
+    ("OnBoardDate", "On Board Date is mandatory and cannot be empty."),
+    ("BranchName", "Branch Name is mandatory and cannot be empty."),
 )
 
 INACTIVE_DEPENDENCIES: tuple[tuple[str, str], ...] = (
     ("DateNotif", "Notification Date is mandatory when account is Inactive."),
     ("TermDate", "Termination Date is mandatory when account is Inactive."),
-    ("TermCode", "Termination Reason is mandatory when account is Inactive."),
+    ("TermCode", "Termination Reason is mandatory when account is Inactive.")
 )
 
 ZERO_REQUIRED_LEVELS = {

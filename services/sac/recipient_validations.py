@@ -20,7 +20,6 @@ REQUIRED_HCM_FIELDS = (
     "LanID",
 )
 
-
 def _has_value(value: Any) -> bool:
     if value is None:
         return False
@@ -53,7 +52,7 @@ def clean_and_validate_recipient_rows(data_list: list[dict[str, Any]]):
                     {
                         "field": field,
                         "code": "REQUIRED",
-                        "message": f"{field} is mandatory for recipient row {idx}.",
+                        "message": f" You've left a blank a mandatory field :{field}. Please check your entries.",
                     }
                 )
 
