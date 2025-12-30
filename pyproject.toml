@@ -3,7 +3,7 @@ requires = ["setuptools>=67.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sac-be"
+name = "SAC-backend"
 version = "0.1.0"
 description = "Backend services for SAC account provisioning"
 requires-python = ">=3.10"
