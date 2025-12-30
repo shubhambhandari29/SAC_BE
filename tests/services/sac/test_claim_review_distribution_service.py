@@ -42,11 +42,13 @@ async def test_upsert_distribution(monkeypatch):
             "AttnTo": "Name",
             "EMailAddress": "a@example.com",
             "CreatedDate": "10-01-2024",
+            "PK_Number": 10,
         }
     ]
     result = await svc.upsert_distribution(payload)
     assert result == {"count": 1}
     assert captured["data"][0]["CreatedDate"] == date(2024, 1, 10)
+    assert "PK_Number" not in captured["data"][0]
 
 
 @pytest.mark.anyio

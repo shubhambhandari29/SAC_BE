@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblDistribute_ClaimReview"
 ALLOWED_FILTERS = {"CustomerNum", "EMailAddress"}
+IDENTITY_COLUMNS = {"PK_Number"}
 
 
 async def get_distribution(query_params: dict[str, Any]):
@@ -37,9 +38,12 @@ async def upsert_distribution(data_list: list[dict[str, Any]]):
 
     try:
         normalized = normalize_payload_list(cleaned)
+        sanitized_rows = [
+            {k: v for k, v in row.items() if k not in IDENTITY_COLUMNS} for row in normalized
+        ]
         return await merge_upsert_records_async(
             table=TABLE_NAME,
-            data_list=normalized,
+            data_list=sanitized_rows,
             key_columns=["CustomerNum", "EMailAddress"],
         )
     except Exception as e:
