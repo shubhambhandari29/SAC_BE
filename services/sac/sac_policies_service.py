@@ -54,12 +54,39 @@ async def upsert_sac_policies(data: dict[str, Any]):
             if sanitized_record:
                 await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
         else:
-            await merge_upsert_records_async(
-                table=TABLE_NAME,
-                data_list=[normalized],
-                key_columns=[PRIMARY_KEY],
-                exclude_key_columns_from_insert=True,
-            )
+            existing = await fetch_records_async(table=TABLE_NAME, filters={PRIMARY_KEY: pk_value})
+            existing_row = existing[0] if existing else None
+
+            # If incoming mod differs from stored mod, treat this as a "new mod" clone and insert
+            existing_mod = None
+            if existing_row and existing_row.get("PolMod") is not None:
+                existing_mod = str(existing_row.get("PolMod"))
+            incoming_mod = None
+            if normalized.get("PolMod") is not None:
+                incoming_mod = str(normalized.get("PolMod"))
+
+            if existing_row is None:
+                logger.info("PK_Number %s not found; inserting new policy row", pk_value)
+                sanitized_record = {k: v for k, v in normalized.items() if k != PRIMARY_KEY}
+                if sanitized_record:
+                    await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
+            elif incoming_mod is not None and incoming_mod != existing_mod:
+                logger.info(
+                    "Detected new mod for policy PK_Number %s (old %s -> new %s); inserting clone",
+                    pk_value,
+                    existing_mod,
+                    incoming_mod,
+                )
+                sanitized_record = {k: v for k, v in normalized.items() if k != PRIMARY_KEY}
+                if sanitized_record:
+                    await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
+            else:
+                await merge_upsert_records_async(
+                    table=TABLE_NAME,
+                    data_list=[normalized],
+                    key_columns=[PRIMARY_KEY],
+                    exclude_key_columns_from_insert=True,
+                )
 
         return {"message": "Transaction successful", "count": 1}
     except Exception as e:

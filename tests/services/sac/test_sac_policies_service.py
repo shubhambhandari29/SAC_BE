@@ -42,6 +42,10 @@ async def test_upsert_sac_policies_updates_when_pk_present(monkeypatch):
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+    async def fake_fetch(**kwargs):
+        return [{"PK_Number": 1, "PolMod": "00"}]
+
+    monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     payload = {
         "PK_Number": 1,
@@ -75,6 +79,7 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
 
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+    monkeypatch.setattr(svc, "fetch_records_async", lambda **kwargs: [])
 
     payload = {
         "CustomerNum": "1",
@@ -90,6 +95,44 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
     assert calls["merge_called"] is False
     inserted_payload = calls["insert"]["records"][0]
     assert "PK_Number" not in inserted_payload
+    assert inserted_payload["EffectiveDate"] == date(2024, 1, 1)
+
+
+@pytest.mark.anyio
+async def test_upsert_sac_policies_inserts_new_row_when_mod_changes(monkeypatch):
+    calls: dict[str, Any] = {}
+
+    async def fake_merge(**kwargs):
+        calls["merge"] = kwargs
+
+    async def fake_insert(**kwargs):
+        calls["insert"] = kwargs
+
+    async def fake_fetch(**kwargs):
+        assert kwargs["filters"] == {svc.PRIMARY_KEY: 1}
+        return [{"PK_Number": 1, "PolMod": "00"}]
+
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
+    monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
+
+    payload = {
+        "PK_Number": 1,
+        "CustomerNum": "1",
+        "AccountName": "Acme",
+        "LocCoded": "Y",
+        "PolicyNum": "P1",
+        "PolMod": "01",
+        "EffectiveDate": "01-01-2024",
+    }
+
+    result = await svc.upsert_sac_policies(payload)
+
+    assert result == {"message": "Transaction successful", "count": 1}
+    assert "insert" in calls and "merge" not in calls
+    inserted_payload = calls["insert"]["records"][0]
+    assert "PK_Number" not in inserted_payload
+    assert inserted_payload["PolMod"] == "01"
     assert inserted_payload["EffectiveDate"] == date(2024, 1, 1)
 
 
