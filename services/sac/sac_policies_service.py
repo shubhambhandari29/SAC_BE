@@ -24,6 +24,26 @@ ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod"}
 PREMIUM_ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod", "PolicyStatus"}
 
 
+async def _lookup_pk_number(record: dict[str, Any]) -> int | None:
+    """
+    Fetch the latest PK_Number for a policy identified by its natural key fields.
+    Used after inserts to return the new identity value.
+    """
+    try:
+        query = """
+            SELECT TOP 1 PK_Number
+            FROM tblPolicies
+            WHERE CustomerNum = ? AND PolicyNum = ? AND PolMod = ?
+            ORDER BY PK_Number DESC
+        """
+        params = [record["CustomerNum"], record["PolicyNum"], record["PolMod"]]
+        rows = await run_raw_query_async(query, params)
+        return rows[0]["PK_Number"] if rows else None
+    except Exception as exc:
+        logger.warning("Failed to fetch PK_Number for new policy row: %s", exc)
+        return None
+
+
 async def get_sac_policies(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params, ALLOWED_FILTERS)
@@ -48,11 +68,13 @@ async def upsert_sac_policies(data: dict[str, Any]):
     try:
         normalized = normalize_payload_dates(data)
         pk_value = normalized.get(PRIMARY_KEY)
+        pk_response: int | None = None
 
         if pk_value in (None, ""):
             sanitized_record = {k: v for k, v in normalized.items() if k != PRIMARY_KEY}
             if sanitized_record:
                 await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
+                pk_response = await _lookup_pk_number(sanitized_record)
         else:
             existing = await fetch_records_async(table=TABLE_NAME, filters={PRIMARY_KEY: pk_value})
             existing_row = existing[0] if existing else None
@@ -70,6 +92,7 @@ async def upsert_sac_policies(data: dict[str, Any]):
                 sanitized_record = {k: v for k, v in normalized.items() if k != PRIMARY_KEY}
                 if sanitized_record:
                     await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
+                    pk_response = await _lookup_pk_number(sanitized_record)
             elif incoming_mod is not None and incoming_mod != existing_mod:
                 logger.info(
                     "Detected new mod for policy PK_Number %s (old %s -> new %s); inserting clone",
@@ -80,6 +103,7 @@ async def upsert_sac_policies(data: dict[str, Any]):
                 sanitized_record = {k: v for k, v in normalized.items() if k != PRIMARY_KEY}
                 if sanitized_record:
                     await insert_records_async(table=TABLE_NAME, records=[sanitized_record])
+                    pk_response = await _lookup_pk_number(sanitized_record)
             else:
                 await merge_upsert_records_async(
                     table=TABLE_NAME,
@@ -87,8 +111,9 @@ async def upsert_sac_policies(data: dict[str, Any]):
                     key_columns=[PRIMARY_KEY],
                     exclude_key_columns_from_insert=True,
                 )
+                pk_response = pk_value
 
-        return {"message": "Transaction successful", "count": 1}
+        return {"message": "Transaction successful", "count": 1, "pk": pk_response}
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e

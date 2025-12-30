@@ -40,11 +40,12 @@ async def test_upsert_sac_policies_updates_when_pk_present(monkeypatch):
     async def fake_insert(**kwargs):
         calls["insert"] = kwargs
 
-    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
-    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
     async def fake_fetch(**kwargs):
         return [{"PK_Number": 1, "PolMod": "00"}]
 
+    monkeypatch.setattr(svc, "_lookup_pk_number", lambda record: None)
+    monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
+    monkeypatch.setattr(svc, "insert_records_async", fake_insert)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     payload = {
@@ -58,7 +59,7 @@ async def test_upsert_sac_policies_updates_when_pk_present(monkeypatch):
     }
     result = await svc.upsert_sac_policies(payload)
 
-    assert result == {"message": "Transaction successful", "count": 1}
+    assert result == {"message": "Transaction successful", "count": 1, "pk": 1}
     assert "merge" in calls and "insert" not in calls
     merged_payload = calls["merge"]["data_list"][0]
     assert merged_payload["PK_Number"] == 1
@@ -80,6 +81,7 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
     monkeypatch.setattr(svc, "fetch_records_async", lambda **kwargs: [])
+    monkeypatch.setattr(svc, "_lookup_pk_number", lambda record: 99)
 
     payload = {
         "CustomerNum": "1",
@@ -91,7 +93,7 @@ async def test_upsert_sac_policies_inserts_when_pk_missing(monkeypatch):
     }
     result = await svc.upsert_sac_policies(payload)
 
-    assert result == {"message": "Transaction successful", "count": 1}
+    assert result == {"message": "Transaction successful", "count": 1, "pk": 99}
     assert calls["merge_called"] is False
     inserted_payload = calls["insert"]["records"][0]
     assert "PK_Number" not in inserted_payload
@@ -115,6 +117,7 @@ async def test_upsert_sac_policies_inserts_new_row_when_mod_changes(monkeypatch)
     monkeypatch.setattr(svc, "merge_upsert_records_async", fake_merge)
     monkeypatch.setattr(svc, "insert_records_async", fake_insert)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
+    monkeypatch.setattr(svc, "_lookup_pk_number", lambda record: 99)
 
     payload = {
         "PK_Number": 1,
@@ -128,7 +131,7 @@ async def test_upsert_sac_policies_inserts_new_row_when_mod_changes(monkeypatch)
 
     result = await svc.upsert_sac_policies(payload)
 
-    assert result == {"message": "Transaction successful", "count": 1}
+    assert result == {"message": "Transaction successful", "count": 1, "pk": 99}
     assert "insert" in calls and "merge" not in calls
     inserted_payload = calls["insert"]["records"][0]
     assert "PK_Number" not in inserted_payload
