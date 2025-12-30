@@ -12,6 +12,7 @@ from core.db_helpers import (
     run_raw_query_async,
     sanitize_filters,
 )
+from core.models.sac_policies import normalize_money_string
 from db import db_connection
 from services.sac.policy_validation import validate_policy_payload
 
@@ -27,7 +28,11 @@ async def get_sac_policies(query_params: dict[str, Any]):
     try:
         filters = sanitize_filters(query_params, ALLOWED_FILTERS)
         records = await fetch_records_async(table=TABLE_NAME, filters=filters)
-        return format_records_dates(records)
+        formatted = format_records_dates(records)
+        for record in formatted:
+            if "PremiumAmt" in record:
+                record["PremiumAmt"] = normalize_money_string(record.get("PremiumAmt"))
+        return formatted
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:

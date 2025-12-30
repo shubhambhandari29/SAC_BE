@@ -15,13 +15,19 @@ async def test_get_sac_policies(monkeypatch):
 
     async def fake_fetch(**kwargs):
         assert kwargs["filters"] == {"CustomerNum": "1"}
-        return [{"PolicyNum": "P1", "EffectiveDate": "2024-01-01"}]
+        return [
+            {"PolicyNum": "P1", "EffectiveDate": "2024-01-01", "PremiumAmt": 12345.0},
+            {"PolicyNum": "P2", "EffectiveDate": "2024-01-01"},
+        ]
 
     monkeypatch.setattr(svc, "sanitize_filters", fake_sanitize)
     monkeypatch.setattr(svc, "fetch_records_async", fake_fetch)
 
     result = await svc.get_sac_policies({"CustomerNum": "1"})
-    assert result == [{"PolicyNum": "P1", "EffectiveDate": "01-01-2024"}]
+    assert result == [
+        {"PolicyNum": "P1", "EffectiveDate": "01-01-2024", "PremiumAmt": "12345"},
+        {"PolicyNum": "P2", "EffectiveDate": "01-01-2024"},
+    ]
 
 
 @pytest.mark.anyio
