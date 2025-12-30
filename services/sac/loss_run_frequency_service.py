@@ -63,6 +63,10 @@ async def upsert_frequency(data_list: list[dict[str, Any]]) -> dict[str, Any]:
     """
     try:
         payload = normalize_payload_list([_remap_keys(item) for item in data_list])
+        for row in payload:
+            # Include CompDate even when blank so MERGE updates can null out old values
+            if row.get("CompDate") in (None, ""):
+                row["CompDate"] = None
         result = await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=payload,
