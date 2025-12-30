@@ -23,6 +23,9 @@ class SacPolicyUpsert(BaseModel):
     AgentName: str | None = None
     InceptDate: str | None = None
 
+    class Config:
+        extra = "allow"
+
     @field_validator("PremiumAmt", mode="before")
     @classmethod
     def _ensure_premium_is_string(cls, value: Any) -> str | None:

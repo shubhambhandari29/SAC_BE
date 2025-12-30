@@ -1,4 +1,3 @@
-from datetime import date
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +16,7 @@ class SacAccountUpsert(BaseModel):
     IsSubmitted: int | None = None
     AcctOwner: str | None = None
     BusinessType: str | None = None
+    BranchName: str | None = None
 
     class Config:
         extra = "allow"
