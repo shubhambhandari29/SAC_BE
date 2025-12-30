@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 
 from services.auth_service import get_current_user_from_token
-from services.dropdowns_service import get_dropdown_values as get_dropdown_values_service
+from services.dropdowns_service import (
+    get_dropdown_values as get_dropdown_values_service,
+)
 
 router = APIRouter(dependencies=[Depends(get_current_user_from_token)])
 
