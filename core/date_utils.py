@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, Iterable
+from typing import Any
 
 DATE_OUTPUT_FORMAT = "%d-%m-%Y"
 _DEFAULT_INPUT_FORMATS: tuple[str, ...] = (
