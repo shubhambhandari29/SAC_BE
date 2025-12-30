@@ -205,7 +205,7 @@ async def test_update_field_for_all_policies_runs_query(monkeypatch):
 @pytest.mark.anyio
 async def test_update_field_for_all_policies_invalid_field():
     payload = {
-        "fieldName": "Bad",
+        "fieldName": "Bad Field",
         "updateVia": "CustomerNum",
         "fieldValue": "x",
         "updateViaValue": "1",

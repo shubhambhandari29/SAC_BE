@@ -37,10 +37,13 @@ class SacPolicyBulkFieldUpdate(BaseModel):
     Request body for /sac_policies/update_field_for_all_policies.
     """
 
-    fieldName: Literal["AccountName", "AcctOnPolicyName", "AcctOwner", "AccountActiveYN"]
-    fieldValue: str | bool
-    updateVia: Literal["CustomerNum", "PolicyNum", "PolMod"]
+    fieldName: str
+    fieldValue: Any
+    updateVia: str
     updateViaValue: str = Field(..., min_length=1)
+
+    class Config:
+        extra = "allow"
 
 
 def normalize_money_string(value: Any) -> str | None:

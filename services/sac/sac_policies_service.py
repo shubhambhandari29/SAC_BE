@@ -6,6 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from core.date_utils import format_records_dates, normalize_payload_dates, parse_date_input
 from core.db_helpers import (
+    _ensure_safe_identifier,
     fetch_records_async,
     insert_records_async,
     merge_upsert_records_async,
@@ -123,8 +124,16 @@ async def update_field_for_all_policies(data: dict[str, Any]):
     field_name = data.get("fieldName")
     update_via = data.get("updateVia")
 
+    if not field_name or not update_via:
+        raise HTTPException(status_code=400, detail={"error": "Field name and update via are required"})
     if "fieldValue" not in data or "updateViaValue" not in data:
         raise HTTPException(status_code=400, detail={"error": "Missing required values"})
+
+    try:
+        _ensure_safe_identifier(field_name)
+        _ensure_safe_identifier(update_via)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
     field_value = data["fieldValue"]
     if isinstance(field_value, str):
