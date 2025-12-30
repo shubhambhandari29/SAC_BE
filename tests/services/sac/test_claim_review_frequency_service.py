@@ -60,5 +60,8 @@ async def test_upsert_frequency_sets_null_compdate_when_missing(monkeypatch):
 
     await svc.upsert_frequency(payload)
 
-    assert "CompDate" in captured["data"][0]
-    assert captured["data"][0]["CompDate"] is None
+    row = captured["data"][0]
+    assert "CompDate" in row and row["CompDate"] is None
+    assert "RptType" in row and row["RptType"] is None
+    assert "CRNumNarr" in row and row["CRNumNarr"] is None
+    assert "DelivMeth" in row and row["DelivMeth"] is None
