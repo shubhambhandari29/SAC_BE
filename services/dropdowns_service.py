@@ -1,4 +1,6 @@
 import logging
+import time
+from copy import deepcopy
 from typing import Any
 
 from fastapi import HTTPException
@@ -8,6 +10,9 @@ from core.db_helpers import run_raw_query_async
 logger = logging.getLogger(__name__)
 
 DropdownQuery = str | tuple[str, list[Any]]
+
+DROPDOWN_CACHE_TTL_SECONDS = 300
+_DROPDOWN_CACHE: dict[str, tuple[float, list[dict[str, Any]]]] = {}
 
 _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
     "SAC_Contact1": """
@@ -67,26 +72,58 @@ _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
 }
 
 
+def _get_cached_dropdown(cache_key: str) -> list[dict[str, Any]] | None:
+    entry = _DROPDOWN_CACHE.get(cache_key)
+    if not entry:
+        return None
+
+    expires_at, payload = entry
+    if time.monotonic() >= expires_at:
+        _DROPDOWN_CACHE.pop(cache_key, None)
+        return None
+
+    return deepcopy(payload)
+
+
+def _set_cached_dropdown(cache_key: str, payload: list[dict[str, Any]]) -> None:
+    expires_at = time.monotonic() + DROPDOWN_CACHE_TTL_SECONDS
+    _DROPDOWN_CACHE[cache_key] = (expires_at, deepcopy(payload))
+
+
 async def get_dropdown_values(name: str) -> list[dict[str, Any]]:
     normalized_name = name.strip()
 
     if not normalized_name:
         raise HTTPException(status_code=400, detail={"error": "Dropdown type is required"})
 
+    cache_key = normalized_name
     if normalized_name.lower() == "all":
-        return await get_all_dropdowns()
+        cache_key = "all"
+
+    cached = _get_cached_dropdown(cache_key)
+    if cached is not None:
+        return cached
+
+    if normalized_name.lower() == "all":
+        result = await get_all_dropdowns()
+        _set_cached_dropdown(cache_key, result)
+        return result
 
     query_def = _DROPDOWN_QUERIES.get(normalized_name)
 
     if query_def:
         query, params = _normalize_query_definition(query_def)
         try:
-            return await run_raw_query_async(query, params)
+            result = await run_raw_query_async(query, params)
+            _set_cached_dropdown(cache_key, result)
+            return result
         except Exception as exc:
             logger.warning(f"Error fetching dropdown '{name}': {exc}")
             raise HTTPException(status_code=500, detail={"error": str(exc)}) from exc
 
-    return await _fetch_dynamic_dropdown(normalized_name)
+    result = await _fetch_dynamic_dropdown(normalized_name)
+    _set_cached_dropdown(cache_key, result)
+    return result
 
 
 def _normalize_query_definition(query_def: DropdownQuery) -> tuple[str, list[Any]]:
