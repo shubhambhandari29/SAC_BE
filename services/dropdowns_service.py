@@ -59,6 +59,11 @@ _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
         FROM tblServiceLevel
         ORDER BY SortNum
     """,
+    "Underwriters": """
+        SELECT [UW Last], [UW Email]
+        FROM tblUnderwriters
+        ORDER BY [UW Last]
+    """,
 }
 
 
