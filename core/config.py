@@ -50,13 +50,6 @@ class Settings:
         os.getenv("USE_AZURE_AD_TOKEN_AUTH"), default=False
     )  # set True in azure
 
-    # Optional secret names for Key Vault-driven configuration
-    DB_SERVER_SECRET_NAME: str | None = os.getenv("DB_SERVER_SECRET_NAME")
-    DB_NAME_SECRET_NAME: str | None = os.getenv("DB_NAME_SECRET_NAME")
-    AZURE_TENANT_ID_SECRET_NAME: str | None = os.getenv("AZURE_TENANT_ID_SECRET_NAME")
-    AZURE_CLIENT_ID_SECRET_NAME: str | None = os.getenv("AZURE_CLIENT_ID_SECRET_NAME")
-    AZURE_CLIENT_SECRET_SECRET_NAME: str | None = os.getenv("AZURE_CLIENT_SECRET_SECRET_NAME")
-
     # Azure AD app credentials (used when not pulling from Key Vault)
     AZURE_TENANT_ID: str | None = os.getenv("AZURE_TENANT_ID")
     AZURE_CLIENT_ID: str | None = os.getenv("AZURE_CLIENT_ID")
