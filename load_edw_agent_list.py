@@ -1,7 +1,7 @@
 import argparse
 import csv
 import re
-from typing import Iterable, TextIO
+from typing import Iterable
 
 from db import get_raw_connection
 
@@ -32,33 +32,25 @@ def _iter_rows(csv_path: str, encoding: str) -> Iterable[tuple[str, str]]:
             yield agent_code, agent_name
 
 
-def _write_error(
-    handle: TextIO | None, row: tuple[str, str], error: Exception
-) -> None:
-    if handle is None:
-        return
-    handle.write(f"{row[0]},{row[1]},{str(error).replace(chr(10), ' ')}\n")
+def _format_error(row: tuple[str, str], error: Exception) -> str:
+    clean_error = str(error).replace("\n", " ")
+    return f"Agent_Code={row[0]!r}, Agent_Name={row[1]!r}, Error={clean_error}"
 
 
 def load_agents(
     csv_path: str,
     batch_size: int,
     encoding: str,
-    error_log: str | None,
-    continue_on_error: bool,
-) -> int:
+) -> tuple[int, list[str]]:
     sql = "INSERT INTO tblEDW_AGENT_LIST (Agent_Code, Agent_Name) VALUES (?, ?)"
     total = 0
     batch: list[tuple[str, str]] = []
+    errors: list[str] = []
 
     conn = get_raw_connection()
-    error_handle = None
     try:
         cursor = conn.cursor()
         cursor.fast_executemany = True
-        error_handle = open(error_log, "w", encoding="utf-8") if error_log else None
-        if error_handle is not None:
-            error_handle.write("Agent_Code,Agent_Name,Error\n")
 
         for row in _iter_rows(csv_path, encoding):
             batch.append(row)
@@ -70,8 +62,6 @@ def load_agents(
                     batch.clear()
                 except Exception:
                     conn.rollback()
-                    if not continue_on_error:
-                        raise
                     for item in batch:
                         try:
                             cursor.execute(sql, item)
@@ -79,7 +69,7 @@ def load_agents(
                             total += 1
                         except Exception as row_exc:
                             conn.rollback()
-                            _write_error(error_handle, item, row_exc)
+                            errors.append(_format_error(item, row_exc))
                     batch.clear()
 
         if batch:
@@ -89,8 +79,6 @@ def load_agents(
                 total += len(batch)
             except Exception:
                 conn.rollback()
-                if not continue_on_error:
-                    raise
                 for item in batch:
                     try:
                         cursor.execute(sql, item)
@@ -98,14 +86,12 @@ def load_agents(
                         total += 1
                     except Exception as row_exc:
                         conn.rollback()
-                        _write_error(error_handle, item, row_exc)
+                        errors.append(_format_error(item, row_exc))
             batch.clear()
     finally:
-        if error_handle is not None:
-            error_handle.close()
         conn.close()
 
-    return total
+    return total, errors
 
 
 def main() -> None:
@@ -128,27 +114,18 @@ def main() -> None:
         default="utf-8-sig",
         help="CSV file encoding (default: utf-8-sig)",
     )
-    parser.add_argument(
-        "--error-log",
-        default="edw_agent_list_errors.csv",
-        help="Path for bad-row log (set to empty to disable)",
-    )
-    parser.add_argument(
-        "--continue-on-error",
-        action="store_true",
-        help="Continue inserting when a row fails",
-    )
     args = parser.parse_args()
 
-    error_log = args.error_log or None
-    inserted = load_agents(
+    inserted, errors = load_agents(
         args.csv,
         args.batch_size,
         args.encoding,
-        error_log,
-        args.continue_on_error,
     )
     print(f"Inserted {inserted} rows into tblEDW_AGENT_LIST")
+    if errors:
+        print("Rows that failed to insert:")
+        for entry in errors:
+            print(entry)
 
 
 if __name__ == "__main__":
