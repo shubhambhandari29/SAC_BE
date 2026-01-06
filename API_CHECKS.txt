@@ -584,6 +584,11 @@ SELECT tblUnderwriters.[UW Last], tblUnderwriters.[UW Email] FROM tblUnderwriter
 ye dropdown wali api me add karna hai, search by ki value "Underwriters" rakhna iske liye
 
 
+Agent_Code='13-8902', Agent_Name='UNKNOWN - Slapshot RI Fix', Error=('22018', "[22018] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Conversion failed when converting the nvarchar value '13-8902' to data type int. (245) (SQLExecDirectW)")
+Agent_Code='28-1142', Agent_Name='UNKNOWN - Slapshot RI Fix', Error=('22018', "[22018] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Conversion failed when converting the nvarchar value '28-1142' to data type int. (245) (SQLExecDirectW)")
+Agent_Code='XX09999', Agent_Name='UNKNOWN - Slapshot RI Fix', Error=('22018', "[22018] [Microsoft][ODBC Driver 17 for SQL Server][SQL Server]Conversion failed when converting the nvarchar value 'XX09999' to data type int. (245) (SQLExecDirectW)")
+
+
 
 
 
