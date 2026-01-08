@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,7 +31,11 @@ from api.affinity.claim_review_frequency import router as claim_review_frequency
 
 configure_logging()
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
+
+logger.info("ENVIRONMENT=%s", settings.ENVIRONMENT)
 
 app.add_middleware(
     CORSMiddleware,
