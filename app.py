@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -31,11 +29,7 @@ from api.affinity.claim_review_frequency import router as claim_review_frequency
 
 configure_logging()
 
-logger = logging.getLogger(__name__)
-
 app = FastAPI()
-
-logger.info("ENVIRONMENT=%s", settings.ENVIRONMENT)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,7 +42,7 @@ app.add_middleware(
 
 @app.get("/", tags=["home page"])
 async def home():
-    return "Welcome to SAC"
+    return "--- Welcome to SAC ---"
 
 
 @app.get("/health", tags=["health"])
