@@ -91,7 +91,7 @@ def parse_date_input(value: Any) -> Any:
 
         parsed = _try_parse_datetime(text)
         if parsed:
-            if _string_has_time_component(text):
+            if "T" in text or ":" in text:
                 return parsed
             return parsed.date()
 
@@ -102,10 +102,6 @@ def _should_process_field(field_name: str, field_set: set[str] | None) -> bool:
     if field_set is not None:
         return field_name in field_set
 
-    return _looks_like_date_field(field_name)
-
-
-def _looks_like_date_field(field_name: str) -> bool:
     if not field_name:
         return False
 
@@ -147,5 +143,3 @@ def _try_parse_datetime(text: str) -> datetime | None:
     return None
 
 
-def _string_has_time_component(text: str) -> bool:
-    return "T" in text or ":" in text

@@ -48,14 +48,14 @@ async def get_sac_account(query_params: dict[str, Any]):
 
         if not branch_filter:
             records = await fetch_records_async(table=TABLE_NAME, filters=filters)
-            return _format_date_fields(records)
+            return format_records_dates(records, fields=_DATE_FIELDS)
 
         branch_terms = [term for term in re.split(r"[ ,&]+", str(branch_filter)) if term.strip()]
 
         # Fall back to simple filtering if nothing usable came from the branch filter.
         if not branch_terms:
             records = await fetch_records_async(table=TABLE_NAME, filters=filters)
-            return _format_date_fields(records)
+            return format_records_dates(records, fields=_DATE_FIELDS)
 
         clauses: list[str] = []
         params: list[Any] = []
@@ -73,7 +73,7 @@ async def get_sac_account(query_params: dict[str, Any]):
             query += " WHERE " + " AND ".join(clauses)
 
         records = await run_raw_query_async(query, list(params))
-        return _format_date_fields(records)
+        return format_records_dates(records, fields=_DATE_FIELDS)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
     except Exception as e:
@@ -83,7 +83,7 @@ async def get_sac_account(query_params: dict[str, Any]):
 
 async def upsert_sac_account(data: dict[str, Any]):
     try:
-        normalized_data = _normalize_date_fields_for_upsert(data)
+        normalized_data = normalize_payload_dates(data, fields=_DATE_FIELDS)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=[normalized_data],
@@ -94,9 +94,3 @@ async def upsert_sac_account(data: dict[str, Any]):
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
 
 
-def _format_date_fields(records: list[dict[str, Any]]):
-    return format_records_dates(records, fields=_DATE_FIELDS)
-
-
-def _normalize_date_fields_for_upsert(data: dict[str, Any]) -> dict[str, Any]:
-    return normalize_payload_dates(data, fields=_DATE_FIELDS)

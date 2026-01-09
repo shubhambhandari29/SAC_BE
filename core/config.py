@@ -11,6 +11,11 @@ class Settings:
     # Feature flags / environment toggles
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "local")
 
+    # Database configuration
+    DB_SERVER: str | None = os.getenv("DB_SERVER")
+    DB_NAME: str | None = os.getenv("DB_NAME")
+    DB_DRIVER: str = os.getenv("DB_DRIVER", "{ODBC Driver 18 for SQL Server}")
+    DB_AUTH: str | None = os.getenv("DB_AUTH")
 
     # Azure AD app credentials (used with SSO login)
     AZURE_TENANT_ID: str | None = os.getenv("AZURE_TENANT_ID")

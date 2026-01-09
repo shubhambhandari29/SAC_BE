@@ -48,16 +48,3 @@ def db_connection():
         yield conn
     finally:
         conn.close()
-
-
-def get_db():
-    """
-    FastAPI dependency for routes or services.
-    Each request gets a fresh connection. We are not using this right now
-    we will use this if we use dependency injection
-    """
-    conn = get_raw_connection()
-    try:
-        yield conn
-    finally:
-        conn.close()
