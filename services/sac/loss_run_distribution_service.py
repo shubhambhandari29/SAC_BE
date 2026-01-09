@@ -11,7 +11,6 @@ from core.db_helpers import (
     merge_upsert_records_async,
     sanitize_filters,
 )
-from services.sac.recipient_validations import clean_and_validate_recipient_rows
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +31,8 @@ async def get_distribution(query_params: dict[str, Any]):
 
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
-    cleaned, errors = clean_and_validate_recipient_rows(data_list)
-    if errors:
-        raise HTTPException(status_code=422, detail={"errors": errors})
-
     try:
-        normalized = normalize_payload_list(cleaned)
+        normalized = normalize_payload_list(data_list)
         to_update: list[dict[str, Any]] = []
         to_insert: list[dict[str, Any]] = []
 
@@ -72,7 +67,7 @@ async def delete_distribution(data_list: list[dict[str, Any]]):
         return await delete_records_async(
             table=TABLE_NAME,
             data_list=data_list,
-            key_columns=["CustomerNum", "EMailAddress"],
+            key_columns=["CustomerNum", "AttnTo"],
         )
     except Exception as e:
         logger.warning(f"Deletion failed - {str(e)}")

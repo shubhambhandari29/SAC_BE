@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblPolicies"
 PRIMARY_KEY = "PK_Number"
-ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod", "PK_Number"}
+ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod","PK_Number"}
 PREMIUM_ALLOWED_FILTERS = {"CustomerNum", "PolicyNum", "PolMod", "PolicyStatus"}
 
 

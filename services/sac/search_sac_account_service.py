@@ -76,9 +76,9 @@ SEARCH_QUERIES = {
         HAVING tblPolicies.AgentCode IS NOT NULL
         ORDER BY tblPolicies.AgentCode;
     """,
-    "PolicyNamedInsured": """
+    "PolicyNameInsured": """
         SELECT
-            tblPolicies.AcctOnPolicyName AS [Named Insured on Policy],
+            tblPolicies.AcctOnPolicyName AS [Name Insured on Policy],
             tblAcctSpecial.CustomerName AS [Customer Name],
             tblAcctSpecial.AcctOwner AS [Account Owner],
             tblPolicies.CustomerNum AS [Customer Number]

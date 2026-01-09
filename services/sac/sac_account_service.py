@@ -1,4 +1,3 @@
-
 # services/sac/sac_account_service.py
 
 import logging
@@ -17,7 +16,6 @@ from core.db_helpers import (
     run_raw_query_async,
     sanitize_filters,
 )
-from services.sac.account_validation import validate_account_payload
 
 logger = logging.getLogger(__name__)
 
@@ -84,23 +82,13 @@ async def get_sac_account(query_params: dict[str, Any]):
 
 
 async def upsert_sac_account(data: dict[str, Any]):
-    role = data.get("Stage") or "Underwriter"
-    errors = validate_account_payload(data, role)
-    if errors:
-        raise HTTPException(status_code=422, detail={"errors": errors})
-
-    sanitized_payload = data.copy()
-    sanitized_payload.pop("ServiceLevelOverride", None)
-
     try:
-        normalized_data = _normalize_date_fields_for_upsert(sanitized_payload)
+        normalized_data = _normalize_date_fields_for_upsert(data)
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=[normalized_data],
             key_columns=["CustomerNum"],
         )
-    except HTTPException:
-        raise
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e

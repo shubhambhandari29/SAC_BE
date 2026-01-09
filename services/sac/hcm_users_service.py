@@ -10,7 +10,6 @@ from core.db_helpers import (
     merge_upsert_records_async,
     sanitize_filters,
 )
-from services.sac.recipient_validations import validate_hcm_users
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +47,6 @@ async def get_hcm_users(query_params: dict[str, Any]):
 
 
 async def upsert_hcm_users(data_list: list[dict[str, Any]]):
-    errors = validate_hcm_users(data_list)
-    if errors:
-        raise HTTPException(status_code=422, detail={"errors": errors})
-
     try:
         payload = normalize_payload_list([_remap_keys(item) for item in data_list])
         to_update: list[dict[str, Any]] = []

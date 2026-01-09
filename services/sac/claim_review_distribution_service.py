@@ -56,7 +56,7 @@ async def delete_distribution(data_list: list[dict[str, Any]]):
         return await delete_records_async(
             table=TABLE_NAME,
             data_list=data_list,
-            key_columns=["CustomerNum", "EMailAddress"],
+            key_columns=["CustomerNum", "AttnTo"],
         )
     except Exception as e:
         logger.warning(f"Deletion failed - {str(e)}")
