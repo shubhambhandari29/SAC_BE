@@ -72,7 +72,7 @@ _DROPDOWN_QUERIES: dict[str, DropdownQuery] = {
     "EDW_AGENT_LIST": """
         SELECT Agent_Code, Agent_Name
         FROM tblEDW_AGENT_LIST
-        ORDER BY Agent_Name, Agent_Code
+        ORDER BY Agent_Code
     """,
 }
 
