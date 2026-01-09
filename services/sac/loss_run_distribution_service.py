@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from core.date_utils import format_records_dates, normalize_payload_list
+from core.date_utils import format_records_dates, normalize_payload_dates
 from core.db_helpers import (
     delete_records_async,
     fetch_records_async,
@@ -32,7 +32,7 @@ async def get_distribution(query_params: dict[str, Any]):
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
     try:
-        normalized = normalize_payload_list(data_list)
+        normalized = [normalize_payload_dates(item) for item in data_list]
         to_update: list[dict[str, Any]] = []
         to_insert: list[dict[str, Any]] = []
 

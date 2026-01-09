@@ -27,8 +27,20 @@ def format_records_dates(
 
     for record in records:
         for key in list(record.keys()):
-            if not _should_process_field(key, field_set):
-                continue
+            if field_set is not None:
+                if key not in field_set:
+                    continue
+            else:
+                if not key:
+                    continue
+                lowered = key.lower()
+                if not (
+                    "date" in lowered
+                    or lowered.endswith("dt")
+                    or lowered.endswith("_dt")
+                    or lowered.endswith("date")
+                ):
+                    continue
             record[key] = format_date_value(record.get(key))
     return records
 
@@ -42,18 +54,22 @@ def normalize_payload_dates(
     field_set = set(fields) if fields is not None else None
 
     for key in list(normalized.keys()):
-        if not _should_process_field(key, field_set):
-            continue
+        if field_set is not None:
+            if key not in field_set:
+                continue
+        else:
+            if not key:
+                continue
+            lowered = key.lower()
+            if not (
+                "date" in lowered
+                or lowered.endswith("dt")
+                or lowered.endswith("_dt")
+                or lowered.endswith("date")
+            ):
+                continue
         normalized[key] = parse_date_input(normalized.get(key))
     return normalized
-
-
-def normalize_payload_list(
-    payloads: list[dict[str, Any]],
-    *,
-    fields: Iterable[str] | None = None,
-) -> list[dict[str, Any]]:
-    return [normalize_payload_dates(payload, fields=fields) for payload in payloads]
 
 
 def format_date_value(value: Any) -> Any:
@@ -96,22 +112,6 @@ def parse_date_input(value: Any) -> Any:
             return parsed.date()
 
     return value
-
-
-def _should_process_field(field_name: str, field_set: set[str] | None) -> bool:
-    if field_set is not None:
-        return field_name in field_set
-
-    if not field_name:
-        return False
-
-    lowered = field_name.lower()
-    return (
-        "date" in lowered
-        or lowered.endswith("dt")
-        or lowered.endswith("_dt")
-        or lowered.endswith("date")
-    )
 
 
 def _try_parse_datetime(text: str) -> datetime | None:

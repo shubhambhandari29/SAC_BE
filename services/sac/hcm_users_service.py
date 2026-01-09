@@ -3,7 +3,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from core.date_utils import format_records_dates, normalize_payload_list
+from core.date_utils import format_records_dates, normalize_payload_dates
 from core.db_helpers import (
     fetch_records_async,
     insert_records_async,
@@ -48,7 +48,7 @@ async def get_hcm_users(query_params: dict[str, Any]):
 
 async def upsert_hcm_users(data_list: list[dict[str, Any]]):
     try:
-        payload = normalize_payload_list([_remap_keys(item) for item in data_list])
+        payload = [normalize_payload_dates(_remap_keys(item)) for item in data_list]
         to_update: list[dict[str, Any]] = []
         to_insert: list[dict[str, Any]] = []
 

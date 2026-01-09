@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from core.date_utils import format_records_dates, normalize_payload_list
+from core.date_utils import format_records_dates, normalize_payload_dates
 from core.db_helpers import (
     fetch_records_async,
     merge_upsert_records_async,
@@ -54,7 +54,7 @@ async def get_frequency(query_params: dict[str, Any]) -> list[dict[str, Any]]:
 
 async def upsert_frequency(data_list: list[dict[str, Any]]) -> dict[str, Any]:
     try:
-        payload = normalize_payload_list([_remap_keys(item) for item in data_list])
+        payload = [normalize_payload_dates(_remap_keys(item)) for item in data_list]
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=payload,

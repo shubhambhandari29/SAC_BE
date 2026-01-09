@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import HTTPException
 
-from core.date_utils import format_records_dates, normalize_payload_list
+from core.date_utils import format_records_dates, normalize_payload_dates
 from core.db_helpers import (
     fetch_records_async,
     merge_upsert_records_async,
@@ -62,7 +62,7 @@ async def upsert_frequency(data_list: list[dict[str, Any]]) -> dict[str, Any]:
     Matching key: CustomerNum + MthNum.
     """
     try:
-        payload = normalize_payload_list([_remap_keys(item) for item in data_list])
+        payload = [normalize_payload_dates(_remap_keys(item)) for item in data_list]
         for row in payload:
             # Include CompDate even when blank so MERGE updates can null out old values
             if row.get("CompDate") in (None, ""):

@@ -77,6 +77,29 @@ def get_user_by_email(email: str) -> dict[str, Any] | None:
     return None
 
 
+def get_user_by_id(user_id: int) -> dict[str, Any] | None:
+    """
+    Fetch a single active user by id.
+    Returns: dict or None
+    """
+    query = """
+        SELECT *
+        FROM tblUsers
+        WHERE active = 1 AND id = ?
+    """
+
+    try:
+        results = run_raw_query(query, [user_id])
+    except Exception as e:
+        logger.error(f"DB error fetching user by id {user_id}: {e}")
+        raise
+
+    if len(results) == 1:
+        return results[0]
+
+    return None
+
+
 # -------------------------
 # AUTH SERVICE FUNCTIONS
 # -------------------------
@@ -137,7 +160,7 @@ async def login_user(login_data: dict[str, Any], response: Response):
     }
 
     # Create JWT
-    token = create_access_token(user)
+    token = create_access_token(user["id"], user.get("role"))
 
     # Set cookie
     _set_session_cookie(response, token)
@@ -159,9 +182,22 @@ async def get_current_user_from_token(request: Request):
 
     try:
         payload = decode_access_token(token)
-        user = payload.get("user")
-        if not user:
+        user_id = payload.get("sub")
+        if not user_id and isinstance(payload.get("user"), dict):
+            user_id = payload["user"].get("id")
+        if not user_id:
             raise HTTPException(status_code=401, detail={"error": "Invalid token"})
+        user_record = get_user_by_id(user_id)
+        if not user_record:
+            raise HTTPException(status_code=401, detail={"error": "Invalid token"})
+        user = {
+            "id": user_record["ID"],
+            "first_name": user_record["FirstName"],
+            "last_name": user_record["LastName"],
+            "email": user_record["Email"],
+            "role": user_record["Role"],
+            "branch": user_record["BranchName"],
+        }
     except Exception as e:
         logger.error(f"Token decode failed: {e}")
         raise HTTPException(status_code=401, detail={"error": "Invalid token"}) from e
@@ -192,15 +228,17 @@ async def refresh_user_token(request: Request, response: Response, token: str | 
 
     try:
         payload = decode_access_token(token)
-        user = payload.get("user")
-        if not user:
+        user_id = payload.get("sub")
+        if not user_id and isinstance(payload.get("user"), dict):
+            user_id = payload["user"].get("id")
+        if not user_id:
             raise HTTPException(status_code=401, detail={"error": "Invalid token"})
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
         raise HTTPException(status_code=401, detail={"error": "Invalid token"}) from e
 
     # Generate new token
-    new_token = create_access_token(user)
+    new_token = create_access_token(user_id, payload.get("role"))
 
     _set_session_cookie(response, new_token)
 
