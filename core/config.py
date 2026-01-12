@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 # Load .env values
 load_dotenv()
 
+def _as_bool(value: str | None, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() == "true"
+
 
 class Settings:
 
@@ -28,6 +33,9 @@ class Settings:
 
     # CORS settings
     ALLOWED_ORIGINS: list = [os.getenv("FRONTEND_URL","http://localhost:3000")]
+
+    # Cookie settings
+    SECURE_COOKIE: bool = _as_bool(os.getenv("SECURE_COOKIE"), False)
 
 
 settings = Settings()

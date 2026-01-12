@@ -14,7 +14,3 @@ class LossRunFrequencyEntry(BaseModel):
     CompDate: str | None = None
     RptType: Any | None = None
     DelivMeth: Any | None = None
-
-
-class LossRunFrequencyPayload(BaseModel):
-    items: list[LossRunFrequencyEntry]

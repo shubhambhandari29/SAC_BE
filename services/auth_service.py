@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi import HTTPException, Request, Response
 
+from core.config import settings
 from core.db_helpers import run_raw_query
 from core.encrypt import hash_password, verify_password
 from core.jwt_handler import (
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 SESSION_COOKIE_NAME = "session"
 COOKIE_OPTIONS = {
     "httponly": True,
-    "secure": False,  # for local test. we will make it True for https envs
+    "secure": settings.SECURE_COOKIE,
     "samesite": "lax",
     "path": "/",
 }
@@ -233,6 +234,9 @@ async def refresh_user_token(request: Request, response: Response, token: str | 
             user_id = payload["user"].get("id")
         if not user_id:
             raise HTTPException(status_code=401, detail={"error": "Invalid token"})
+        user_record = get_user_by_id(user_id)
+        if not user_record:
+            raise HTTPException(status_code=401, detail={"error": "Invalid token"})
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
         raise HTTPException(status_code=401, detail={"error": "Invalid token"}) from e
@@ -242,6 +246,6 @@ async def refresh_user_token(request: Request, response: Response, token: str | 
 
     _set_session_cookie(response, new_token)
 
-    logger.info(f"Token refreshed for user {user['email']}")
+    logger.info(f"Token refreshed for user {user_record['Email']}")
 
     return {"message": "Token refreshed", "token": new_token}

@@ -15,7 +15,3 @@ class ClaimReviewFrequencyEntry(BaseModel):
     RptType: Any | None = None
     DelivMeth: Any | None = None
     CRNumNarr: int | None = None
-
-
-class ClaimReviewFrequencyPayload(BaseModel):
-    items: list[ClaimReviewFrequencyEntry]

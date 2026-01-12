@@ -10,7 +10,7 @@ from services.auth_service import (
 )
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
 
 @router.post("/login")
@@ -19,7 +19,7 @@ async def login(payload: LoginRequest, response: Response):
 
 
 @router.get("/me")
-async def get_current_user(request: Request, response: Response):
+async def get_current_user(request: Request):
     return await get_current_user_from_token(request)
 
 

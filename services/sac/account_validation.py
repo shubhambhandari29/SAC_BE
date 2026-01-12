@@ -40,8 +40,8 @@ DIRECTOR_ADDITIONAL_FIELDS = {
     "ClaimRevDistFreq",
     "CRThresh",
     "LossRunReportRecipient",
-    "DecuctCheckAll",
-    "DecuctUnCheckAll",
+    "DeductCheckAll",
+    "DeductUnCheckAll",
     "DeductReportRecipient",
     "ClaimRevCheckAll",
     "ClaimRevUnCheckAll",
@@ -67,7 +67,7 @@ INACTIVE_DEPENDENCIES: tuple[tuple[str, str], ...] = (
 )
 
 ZERO_REQUIRED_LEVELS = {
-    "Decuctible Billing - Special Accounts",
+    "Deductible Billing - Special Accounts",
     "Loss Run",
     "Deductible Billing - Paragon",
     "Inactive",
