@@ -20,7 +20,7 @@ SESSION_COOKIE_NAME = "session"
 COOKIE_OPTIONS = {
     "httponly": True,
     "secure": settings.SECURE_COOKIE,
-    "samesite": "lax",
+    "samesite": settings.SAME_SITE,
     "path": "/",
 }
 
