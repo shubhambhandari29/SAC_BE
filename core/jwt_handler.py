@@ -1,3 +1,4 @@
+
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -11,7 +12,7 @@ ACCESS_TOKEN_VALIDITY = settings.ACCESS_TOKEN_VALIDITY
 
 def create_access_token(user_id, role=None):
     expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_VALIDITY)
-    payload = {"sub": user_id, "exp": expire}
+    payload = {"sub": str(user_id), "exp": expire}
     if role is not None:
         payload["role"] = role
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
