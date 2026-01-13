@@ -42,7 +42,7 @@ app.add_middleware(
 
 @app.get("/", tags=["home page"])
 async def home():
-    return "--- Welcome to SAC ---"
+    return {"message":"Welcome to SAC"}
 
 
 @app.get("/health", tags=["health"])
