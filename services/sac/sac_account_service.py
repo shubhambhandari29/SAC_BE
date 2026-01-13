@@ -92,5 +92,3 @@ async def upsert_sac_account(data: dict[str, Any]):
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")
         raise HTTPException(status_code=500, detail={"error": str(e)}) from e
-
-

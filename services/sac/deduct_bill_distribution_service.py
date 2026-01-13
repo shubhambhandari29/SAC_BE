@@ -14,7 +14,7 @@ from core.db_helpers import (
 logger = logging.getLogger(__name__)
 
 TABLE_NAME = "tblDistribute_DeductBill"
-ALLOWED_FILTERS = {"CustomerNum", "EMailAddress"}
+ALLOWED_FILTERS = {"CustomerNum", "EMailAddress","AttnTo"}
 
 
 async def get_distribution(query_params: dict[str, Any]):
@@ -35,7 +35,7 @@ async def upsert_distribution(data_list: list[dict[str, Any]]):
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=normalized,
-            key_columns=["CustomerNum", "EMailAddress"],
+            key_columns=["CustomerNum", "AttnTo"],
         )
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")

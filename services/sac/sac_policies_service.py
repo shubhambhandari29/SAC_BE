@@ -15,7 +15,6 @@ from core.db_helpers import (
 )
 from core.models.sac_policies import normalize_money_string
 from db import db_connection
-from services.sac.policy_validation import validate_policy_payload
 
 logger = logging.getLogger(__name__)
 
@@ -62,10 +61,6 @@ async def get_sac_policies(query_params: dict[str, Any]):
 
 
 async def upsert_sac_policies(data: dict[str, Any]):
-    errors = validate_policy_payload(data)
-    if errors:
-        raise HTTPException(status_code=422, detail={"errors": errors})
-
     try:
         normalized = normalize_payload_dates(data)
         pk_value = normalized.get(PRIMARY_KEY)

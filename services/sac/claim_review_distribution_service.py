@@ -10,7 +10,7 @@ from core.db_helpers import (
     merge_upsert_records_async,
     sanitize_filters,
 )
-from services.sac.recipient_validations import clean_and_validate_recipient_rows
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,19 +32,15 @@ async def get_distribution(query_params: dict[str, Any]):
 
 
 async def upsert_distribution(data_list: list[dict[str, Any]]):
-    cleaned, errors = clean_and_validate_recipient_rows(data_list)
-    if errors:
-        raise HTTPException(status_code=422, detail={"errors": errors})
-
     try:
-        normalized = [normalize_payload_dates(item) for item in cleaned]
+        normalized = [normalize_payload_dates(item) for item in data_list]
         sanitized_rows = [
             {k: v for k, v in row.items() if k not in IDENTITY_COLUMNS} for row in normalized
         ]
         return await merge_upsert_records_async(
             table=TABLE_NAME,
             data_list=sanitized_rows,
-            key_columns=["CustomerNum", "EMailAddress"],
+            key_columns=["CustomerNum", "AttnTo"],
         )
     except Exception as e:
         logger.warning(f"Upsert failed - {str(e)}")
